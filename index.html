@@ -298,6 +298,51 @@ function generateNote() {
 
     const getCN = (id) => document.getElementById(id).value;
 
+    // --- Localization Logic (新加入) ---
+    let locScores = { Cortex: 0, Brainstem: 0, Spinal: 0, Lacunar: 0 };
+    let locHints = [];
+
+    // 1. 皮質徵象 (NIHSS 9, 11, 2, 3)
+    if (parseInt(n('9')) > 0) { locScores.Cortex += 15; locHints.push("Language deficit (Aphasia)"); }
+    if (parseInt(n('11')) > 0) { locScores.Cortex += 15; locHints.push("Neglect / Inattention"); }
+    if (parseInt(n('2')) > 0 || parseInt(n('3')) > 0) { locScores.Cortex += 5; locHints.push("Gaze or Visual field defect"); }
+
+    // 2. 肢體無力型態分析
+    const pwrR = Array.from(document.querySelectorAll('.v-motor-r')).map(s => parseInt(s.value));
+    const pwrL = Array.from(document.querySelectorAll('.v-motor-l')).map(s => parseInt(s.value));
+    const isWeakR = pwrR.some(v => v < 5);
+    const isWeakL = pwrL.some(v => v < 5);
+
+    if (isWeakR && !isWeakL) locHints.push("Right Hemiparesis");
+    if (isWeakL && !isWeakR) locHints.push("Left Hemiparesis");
+
+    // 3. 腦幹 / 交叉性徵象 (CN VII 文字辨識 + 肢體無力)
+    const c7Text = getCN('c7_palsy').toLowerCase();
+    if (c7Text.includes('peripheral')) {
+        locScores.Brainstem += 10;
+        if ((c7Text.includes('left') && isWeakR) || (c7Text.includes('right') && isWeakL)) {
+            locScores.Brainstem += 25;
+            locHints.push("Crossed signs (Face vs Body) -> Highly suspect Brainstem");
+        }
+    } else if (c7Text.includes('central')) {
+        locScores.Cortex += 5;
+    }
+
+    // 4. 脊髓 (雙下肢無力但上肢正常)
+    if (isWeakR && isWeakL && pwrR[1] == 5 && pwrL[1] == 5 && (pwrR[6] < 5 || pwrL[6] < 5)) {
+        locScores.Spinal += 20;
+        locHints.push("Paraparesis pattern -> Suspect Spinal Cord");
+    }
+
+    // 5. 腔隙性 (Lacunar) 考慮 (單純運動無力且無皮質徵象)
+    if ((isWeakR || isWeakL) && parseInt(n('9')) == 0 && parseInt(n('11')) == 0 && parseInt(n('2')) == 0) {
+        locScores.Lacunar += 10;
+    }
+
+    let topLoc = Object.entries(locScores).sort((a,b) => b[1]-a[1]);
+    let locSummary = topLoc[0][1] > 0 ? `Most likely Localization: ${topLoc[0][0]}` : "Localization: Inconclusive (Need more data)";
+    // --- Localization Logic 結束 ---
+
     let note = `【Neurological examination】
 Patient ID: ${id || 'N/A'}
 . Consciousness: clear
@@ -333,7 +378,12 @@ ${motorItems.map((it, idx) => ` ${it}: ${document.querySelectorAll('.v-motor-r')
  3-step orders(${document.getElementById('m18').value}/3)
  construction(${document.getElementById('m20').value}/1)
 
-${nihssStr}`;
+${nihssStr}
+
+[Localization Reference]
+- ${locSummary}
+- Logic Hints: ${locHints.length > 0 ? locHints.join(', ') : 'No specific abnormal signs detected.'}
+`;
 
     document.getElementById('export-area').value = note;
 }
