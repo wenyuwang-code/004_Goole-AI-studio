@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NE Note Master Pro</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --bg: #f4f7f6;
+            --text: #333;
+            --white: #ffffff;
+            --sidebar-width: 200px;
+        }
+
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { margin: 0; background-color: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
+
+        /* Sidebar Navigation */
+        nav {
+            width: var(--sidebar-width);
+            background: var(--primary);
+            color: var(--white);
+            display: flex;
+            flex-direction: column;
+            padding: 20px 0;
+            flex-shrink: 0;
+        }
+        nav h1 { font-size: 1.2rem; text-align: center; margin-bottom: 30px; color: var(--accent); }
+        .nav-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: 0.3s;
+            border-left: 4px solid transparent;
+        }
+        .nav-item:hover { background: #34495e; }
+        .nav-item.active { background: #34495e; border-left: 4px solid var(--accent); }
+
+        /* Main Content */
+        main { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+        .tab-content { padding: 25px; overflow-y: auto; flex-grow: 1; padding-bottom: 80px; }
+        .page { display: none; }
+        .page.active { display: block; }
+
+        /* Form Elements */
+        .section-title { border-bottom: 2px solid var(--accent); margin: 20px 0 15px; padding-bottom: 5px; color: var(--primary); font-weight: bold; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; }
+        .form-group { margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; background: var(--white); padding: 8px 12px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .form-group label { font-size: 0.9rem; flex: 1; }
+        select, input { padding: 5px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9rem; }
+        input[type="number"] { width: 60px; }
+        input[type="text"] { width: 100%; margin-top: 5px; }
+
+        /* Footer Bar */
+        footer {
+            height: 60px;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            font-weight: bold;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+        }
+        .score-tag { background: var(--accent); padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; }
+
+        /* Note Area */
+        textarea#note-output {
+            width: 100%;
+            height: 400px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            background: #f9f9f9;
+            line-height: 1.4;
+        }
+        .btn-group { margin-top: 15px; display: flex; gap: 10px; }
+        button { padding: 10px 20px; cursor: pointer; border: none; border-radius: 5px; font-weight: bold; transition: 0.2s; }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: #2980b9; }
+        .btn-success { background: #27ae60; color: white; }
+
+        /* History */
+        #history-list { list-style: none; padding: 0; }
+        .history-item { 
+            background: white; padding: 15px; margin-bottom: 10px; border-radius: 8px;
+            display: flex; justify-content: space-between; align-items: center; cursor: pointer;
+            border: 1px solid #eee;
+        }
+        .history-item:hover { border-color: var(--accent); }
+    </style>
+</head>
+<body>
+
+<nav>
+    <h1>NE Note Pro</h1>
+    <div class="nav-item active" onclick="showPage('cn')">CN (顱神經)</div>
+    <div class="nav-item" onclick="showPage('motor')">Motor & Reflex</div>
+    <div class="nav-item" onclick="showPage('nihss')">NIHSS</div>
+    <div class="nav-item" onclick="showPage('mmse')">MMSE</div>
+    <div class="nav-item" onclick="showPage('updrs')">UPDRS</div>
+    <div class="nav-item" onclick="showPage('export')">Export & History</div>
+</nav>
+
+<main>
+    <div class="tab-content">
+        <!-- Page: CN -->
+        <div id="page-cn" class="page active">
+            <div class="section-title">Cranial Nerves (Default: Intact)</div>
+            <div class="grid" id="cn-form">
+                <!-- JS dynamic render -->
+            </div>
+        </div>
+
+        <!-- Page: Motor -->
+        <div id="page-motor" class="page">
+            <div class="section-title">Motor Power (R/L)</div>
+            <div class="grid" id="motor-form"></div>
+            <div class="section-title">Deep Tendon Reflex (R/L)</div>
+            <div class="grid" id="reflex-form"></div>
+        </div>
+
+        <!-- Page: NIHSS -->
+        <div id="page-nihss" class="page">
+            <div class="section-title">NIHSS Stroke Scale</div>
+            <div class="grid" id="nihss-form"></div>
+        </div>
+
+        <!-- Page: MMSE -->
+        <div id="page-mmse" class="page">
+            <div class="section-title">MMSE - Cognitive Assessment</div>
+            <div class="grid" id="mmse-form"></div>
+            <div class="section-title">Writing & Observation</div>
+            <input type="text" id="mmse_writing_text" value="我是一個好人" placeholder="Enter patient's written sentence">
+        </div>
+
+        <!-- Page: UPDRS -->
+        <div id="page-updrs" class="page">
+            <div class="section-title">UPDRS Part III (Motor)</div>
+            <div class="grid" id="updrs-form"></div>
+        </div>
+
+        <!-- Page: Export -->
+        <div id="page-export" class="page">
+            <div class="section-title">Generated Medical Note</div>
+            <div class="form-group">
+                <label>Chart No (病歷號碼):</label>
+                <input type="text" id="chart_no" style="width: 200px;">
+                <button class="btn-success" onclick="saveHistory()">Save to History</button>
+            </div>
+            <textarea id="note-output" readonly></textarea>
+            <div class="btn-group">
+                <button class="btn-primary" onclick="copyNote()">Copy to Clipboard</button>
+                <button class="btn-primary" onclick="downloadNote()">Download .txt</button>
+            </div>
+            
+            <div class="section-title">History Records</div>
+            <ul id="history-list"></ul>
+        </div>
+    </div>
+
+    <footer>
+        <div class="score-tag">NIHSS: <span id="total-nihss">0</span></div>
+        <div class="score-tag">MMSE: <span id="total-mmse">30</span>/30</div>
+        <div class="score-tag">UPDRS: <span id="total-updrs">0</span></div>
+    </footer>
+</main>
+
+<script>
+    // --- Data Definitions ---
+    const NIHSS_ITEMS = [
+        { id: '1a', label: '1a. Consciousness', options: [0,1,2,3] },
+        { id: '1b', label: '1b. Questions', options: [0,1,2] },
+        { id: '1c', label: '1c. Commands', options: [0,1,2] },
+        { id: '2',  label: '2. Best Gaze', options: [0,1,2] },
+        { id: '3',  label: '3. Visual', options: [0,1,2,3] },
+        { id: '4',  label: '4. Facial Palsy', options: [0,1,2,3] },
+        { id: '5a', label: '5a. Motor Arm (L)', options: [0,1,2,3,4] },
+        { id: '5b', label: '5b. Motor Arm (R)', options: [0,1,2,3,4] },
+        { id: '6a', label: '6a. Motor Leg (L)', options: [0,1,2,3,4] },
+        { id: '6b', label: '6b. Motor Leg (R)', options: [0,1,2,3,4] },
+        { id: '7',  label: '7. Limb Ataxia', options: [0,1,2] },
+        { id: '8',  label: '8. Sensory', options: [0,1,2] },
+        { id: '9',  label: '9. Best Language', options: [0,1,2,3] },
+        { id: '10', label: '10. Dysarthria', options: [0,1,2] },
+        { id: '11', label: '11. Extinction/Inattention', options: [0,1,2] }
+    ];
+
+    const MMSE_ITEMS = [
+        { id: 'time', label: 'Orientation: Time', max: 5 },
+        { id: 'place', label: 'Orientation: Place', max: 5 },
+        { id: 'reg', label: '3-item Registration', max: 3 },
+        { id: 'ser7', label: 'Serial 7s', max: 5 },
+        { id: 'recall_free', label: '3-item Recall (Free)', max: 3 },
+        { id: 'recall_choice', label: 'Recall (After Choice/Cue)', max: 3 },
+        { id: 'naming', label: 'Naming (Watch, Pen)', max: 2 },
+        { id: 'repeat', label: 'Repetition', max: 1 },
+        { id: 'read', label: 'Reading (Close eyes)', max: 1 },
+        { id: 'write', label: 'Writing (Sentence)', max: 1 },
+        { id: 'step', label: '3-step Command', max: 3 },
+        { id: 'const', label: 'Construction (Pentagons)', max: 1 }
+    ];
+
+    const MOTOR_ITEMS = ['Neck F/E', 'Shoulder Abd', 'Elbow F/E', 'Wrist F/E', 'Finger F/E', 'Grip', 'Hip Flexion', 'Knee F/E', 'Ankle D/P', 'Big Toe Ext'];
+    const REFLEX_ITEMS = ['Biceps', 'Triceps', 'Brachioradialis', 'Knee', 'Ankle'];
+    const UPDRS_ITEMS = ['Speech', 'Mask Face', 'Resting Tremor', 'Action Tremor', 'Rigidity', 'Finger Tapping', 'Grasping', 'RAM', 'Foot Tapping', 'Arise from chair', 'Posture', 'Gait', 'Postural Stability', 'Body Bradykinesia'];
+
+    // --- Core Logic ---
+
+    function initForm() {
+        // NIHSS
+        const nihssContainer = document.getElementById('nihss-form');
+        NIHSS_ITEMS.forEach(item => {
+            nihssContainer.innerHTML += `
+                <div class="form-group">
+                    <label>${item.label}</label>
+                    <select id="nihss_${item.id}" onchange="autoUpdate()">
+                        ${item.options.map(o => `<option value="${o}">${o}</option>`).join('')}
+                    </select>
+                </div>`;
+        });
+
+        // MMSE
+        const mmseContainer = document.getElementById('mmse-form');
+        MMSE_ITEMS.forEach(item => {
+            mmseContainer.innerHTML += `
+                <div class="form-group">
+                    <label>${item.label} (Max ${item.max})</label>
+                    <input type="number" id="mmse_${item.id}" value="${item.id === 'recall_choice' ? 0 : item.max}" min="0" max="${item.max}" oninput="autoUpdate()">
+                </div>`;
+        });
+
+        // Motor
+        const motorContainer = document.getElementById('motor-form');
+        MOTOR_ITEMS.forEach(item => {
+            motorContainer.innerHTML += `
+                <div class="form-group">
+                    <label>${item}</label>
+                    <div>
+                        <select id="motor_${item}_R" onchange="autoUpdate()">
+                            ${[5,4,3,2,1,0].map(v => `<option value="${v}">${v}</option>`).join('')}
+                        </select> / 
+                        <select id="motor_${item}_L" onchange="autoUpdate()">
+                            ${[5,4,3,2,1,0].map(v => `<option value="${v}">${v}</option>`).join('')}
+                        </select>
+                    </div>
+                </div>`;
+        });
+
+        // UPDRS
+        const updrsContainer = document.getElementById('updrs-form');
+        UPDRS_ITEMS.forEach(item => {
+            updrsContainer.innerHTML += `
+                <div class="form-group">
+                    <label>${item}</label>
+                    <select id="updrs_${item}" onchange="autoUpdate()">
+                        ${[0,1,2,3,4].map(v => `<option value="${v}">${v}</option>`).join('')}
+                    </select>
+                </div>`;
+        });
+
+        autoUpdate();
+        loadHistoryList();
+    }
+
+    function showPage(pageId) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById('page-' + pageId).classList.add('active');
+        event.currentTarget.classList.add('active');
+        if (pageId === 'export') generateNote();
+    }
+
+    function autoUpdate() {
+        // Totals
+        let nihssTotal = 0;
+        NIHSS_ITEMS.forEach(i => nihssTotal += parseInt(document.getElementById(`nihss_${i.id}`).value));
+        document.getElementById('total-nihss').innerText = nihssTotal;
+
+        let mmseTotal = 0;
+        MMSE_ITEMS.forEach(i => {
+            if (i.id !== 'recall_choice') {
+                mmseTotal += parseInt(document.getElementById(`mmse_${i.id}`).value || 0);
+            }
+        });
+        document.getElementById('total-mmse').innerText = mmseTotal;
+
+        let updrsTotal = 0;
+        UPDRS_ITEMS.forEach(i => updrsTotal += parseInt(document.getElementById(`updrs_${i}`).value));
+        document.getElementById('total-updrs').innerText = updrsTotal;
+    }
+
+    function generateNote() {
+        const nihssTotal = document.getElementById('total-nihss').innerText;
+        const mmseTotal = document.getElementById('total-mmse').innerText;
+        
+        // NIHSS String formatting (XXX XXX XXXX XXXXX)
+        const n = (id) => document.getElementById(`nihss_${id}`).value;
+        const nihssStr = `NIHSS = ${nihssTotal} (${n('1a')}${n('1b')}${n('1c')} ${n('2')}${n('3')}${n('4')} ${n('5a')}${n('5b')}${n('6a')}${n('6b')} ${n('7')}${n('8')}${n('9')}${n('10')}${n('11')})`;
+
+        // Motor String
+        let motorStr = MOTOR_ITEMS.map(item => {
+            return ` ${item}: ${document.getElementById(`motor_${item}_R`).value}/5 / ${document.getElementById(`motor_${item}_L`).value}/5`;
+        }).join('\n');
+
+        // MMSE Section
+        const m = (id) => document.getElementById(`mmse_${id}`).value;
+        const mmseNote = `. MMSE(${mmseTotal}/30):
+       - Orientation: time(${m('time')}/5) place(${m('place')}/5)
+       - 3-item registration(${m('reg')}/3)("黃色、生氣、火車")
+       - series-7(${m('ser7')}/5)
+       - 3-item recall(${m('recall_free')}/3)(${m('recall_choice')} correct by choice, another failed even choice)
+       - naming(${m('naming')}/2) repeat(${m('repeat')}/1) reading(${m('read')}/1) writing(${m('write')}/1)("${document.getElementById('mmse_writing_text').value}")
+       - 3-step orders(${m('step')}/3)
+       - construction(${m('const')}/1)`;
+
+        const template = `【Neurological examination】
+. Consciousness: clear
+${nihssStr}
+
+*Cranial nerve
+CN I :   smell, intact
+CN II:   Visual acuity: intact; Visual fields: confrontation test-intact
+CN III, IV, VI: Pupil: isocoric 3mm/3mm, light reflex: +/+, EOM: full
+CN V:    Facial sensation: intact; Masseter: full
+CN VII : No facial palsy
+CN VIII: Hearing: fair
+CN IX,X: Uvula: midline, Gag: +, dysarthria(-)
+CN XI:   SCM: 5/5
+CN XII:  Tongue: midline
+
+*Motor
+Motor inspection: muscle wasting(-), fasciculation(-)
+Muscle power:(R/L)
+${motorStr}
+
+*Reflex
+DTR: ++/++ (symmetrical)
+Babinski: -/-
+
+*Sensation 
+Light touch: symmetrically intact 
+Romberg test(-)
+
+*Cerebellum:
+1. Finger nose finger: dysmetria(-)
+2. Rapid alternative movement: normal
+
+*Extrapyramidal system (UPDRS Part III Total: ${document.getElementById('total-updrs').innerText})
+${UPDRS_ITEMS.map(u => u + ": " + document.getElementById('updrs_'+u).value).join(', ')}
+
+*Higher cortical functions
+${mmseNote}`;
+
+        document.getElementById('note-output').value = template;
+    }
+
+    // --- Persistence ---
+    function saveHistory() {
+        const chartNo = document.getElementById('chart_no').value;
+        if (!chartNo) return alert("請輸入病歷號碼");
+        
+        const data = {};
+        document.querySelectorAll('select, input').forEach(el => data[el.id] = el.value);
+        localStorage.setItem('NE_Note_' + chartNo, JSON.stringify(data));
+        loadHistoryList();
+        alert("Saved successfully");
+    }
+
+    function loadHistoryList() {
+        const list = document.getElementById('history-list');
+        list.innerHTML = "";
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key.startsWith('NE_Note_')) {
+                const chartNo = key.replace('NE_Note_', '');
+                list.innerHTML += `
+                    <li class="history-item">
+                        <span>Chart No: ${chartNo}</span>
+                        <div>
+                            <button onclick="loadRecord('${key}')">Load</button>
+                            <button onclick="deleteRecord('${key}')" style="background:#e74c3c; color:white;">Del</button>
+                        </div>
+                    </li>`;
+            }
+        }
+    }
+
+    function loadRecord(key) {
+        const data = JSON.parse(localStorage.getItem(key));
+        for (let id in data) {
+            const el = document.getElementById(id);
+            if (el) el.value = data[id];
+        }
+        document.getElementById('chart_no').value = key.replace('NE_Note_', '');
+        autoUpdate();
+        alert("Record Loaded");
+    }
+
+    function deleteRecord(key) {
+        if(confirm("Delete this record?")) {
+            localStorage.removeItem(key);
+            loadHistoryList();
+        }
+    }
+
+    function copyNote() {
+        const copyText = document.getElementById("note-output");
+        copyText.select();
+        document.execCommand("copy");
+        alert("已複製到剪貼簿");
+    }
+
+    function downloadNote() {
+        const text = document.getElementById("note-output").value;
+        const blob = new Blob([text], { type: "text/plain" });
+        const anchor = document.createElement("a");
+        anchor.download = `NE_Note_${document.getElementById('chart_no').value || 'export'}.txt`;
+        anchor.href = window.URL.createObjectURL(blob);
+        anchor.click();
+    }
+
+    window.onload = initForm;
+</script>
+</body>
+</html>
