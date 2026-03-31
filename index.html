@@ -3,532 +3,394 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NE Note Master Pro - 專業神經學檢查生成器</title>
+    <title>NE Note Master Pro - 專業醫療版</title>
     <style>
-        :root {
-            --primary: #2c3e50;
-            --accent: #3498db;
-            --bg: #f4f7f6;
-            --text: #333;
-            --white: #ffffff;
-            --sidebar-width: 220px;
+        :root { --primary: #2c3e50; --accent: #3498db; --bg: #f4f7f6; --text: #333; --white: #ffffff; }
+        * { box-sizing: border-box; font-family: 'Consolas', 'Segoe UI', monospace; }
+        body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 100px; }
+        
+        /* Navigation */
+        .header { background: var(--primary); padding: 10px; position: sticky; top: 0; z-index: 1000; }
+        .menu { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; }
+        .menu button { padding: 8px 15px; border: none; background: #34495e; color: white; border-radius: 4px; cursor: pointer; font-size: 13px; }
+        .menu button.active { background: var(--accent); font-weight: bold; }
+        .menu button.export-btn { background: #27ae60; }
+
+        /* Container */
+        .container { max-width: 900px; margin: 20px auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .section-title { background: #eee; padding: 10px; font-weight: bold; border-left: 5px solid var(--primary); margin: 20px 0 10px; }
+        
+        /* Form Rows */
+        .row { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
+        .label { flex: 3; font-size: 0.9rem; font-weight: bold; }
+        .input-area { flex: 5; display: flex; gap: 5px; }
+        
+        select, input[type="text"], input[type="number"] { 
+            padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9rem; width: 100%; 
         }
+        .score-desc { font-size: 0.75rem; color: #666; margin-top: 2px; display: block; }
 
-        * { box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
-        body { margin: 0; background-color: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
-
-        /* Sidebar Navigation */
-        nav {
-            width: var(--sidebar-width);
-            background: var(--primary);
-            color: var(--white);
-            display: flex;
-            flex-direction: column;
-            padding: 20px 0;
-            flex-shrink: 0;
-        }
-        nav h1 { font-size: 1.2rem; text-align: center; margin-bottom: 30px; color: var(--accent); }
-        .nav-item {
-            padding: 12px 20px;
-            cursor: pointer;
-            transition: 0.3s;
-            border-left: 4px solid transparent;
-            font-size: 0.95rem;
-        }
-        .nav-item:hover { background: #34495e; }
-        .nav-item.active { background: #34495e; border-left: 4px solid var(--accent); }
-
-        /* Main Content */
-        main { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
-        .tab-content { padding: 25px; overflow-y: auto; flex-grow: 1; padding-bottom: 80px; }
-        .page { display: none; }
-        .page.active { display: block; }
-
-        /* Form Elements */
-        .section-title { border-bottom: 2px solid var(--accent); margin: 20px 0 10px; padding-bottom: 5px; color: var(--primary); font-weight: bold; font-size: 1.1rem; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 10px; }
-        .form-group { margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; background: var(--white); padding: 10px 12px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .form-group label { font-size: 0.9rem; flex: 1; padding-right: 10px; }
-        select, input { padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9rem; }
-        input[type="text"] { width: 120px; text-align: center; }
-        .full-width-input { width: 100% !important; text-align: left !important; margin-top: 5px; }
-
-        /* Footer Bar */
-        footer {
-            height: 60px;
-            background: var(--primary);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: space-around;
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            font-weight: bold;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
-        }
-        .score-tag { background: var(--accent); padding: 6px 15px; border-radius: 20px; font-size: 0.9rem; }
-
-        /* Note Area */
-        textarea#note-output {
-            width: 100%;
-            height: 400px;
-            font-family: 'Consolas', 'Courier New', monospace;
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            background: #f9f9f9;
-            line-height: 1.5;
-            font-size: 0.9rem;
-        }
-        .btn-group { margin-top: 15px; display: flex; gap: 10px; }
-        button { padding: 10px 20px; cursor: pointer; border: none; border-radius: 5px; font-weight: bold; transition: 0.2s; }
-        .btn-primary { background: var(--accent); color: white; }
-        .btn-primary:hover { background: #2980b9; }
-        .btn-success { background: #27ae60; color: white; }
-
-        /* History */
-        #history-list { list-style: none; padding: 0; }
-        .history-item { 
-            background: white; padding: 12px; margin-bottom: 10px; border-radius: 6px;
-            display: flex; justify-content: space-between; align-items: center; cursor: pointer;
-            border: 1px solid #eee;
-        }
-        .history-item:hover { border-color: var(--accent); }
+        /* Footer */
+        .footer-bar { position: fixed; bottom: 0; width: 100%; background: white; border-top: 3px solid var(--primary); padding: 15px; text-align: center; display: flex; justify-content: center; gap: 30px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); }
+        .score-tag { font-weight: bold; font-size: 1.1rem; }
+        
+        #export-area { width: 100%; height: 500px; font-family: monospace; font-size: 13px; padding: 15px; background: #f9f9f9; border: 1px solid #333; }
+        .hidden { display: none; }
+        .btn-action { padding: 10px 20px; background: var(--accent); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin: 5px; }
     </style>
 </head>
 <body>
 
-<nav>
-    <h1>NE Note Master</h1>
-    <div class="nav-item active" onclick="showPage('cn')">CN (顱神經)</div>
-    <div class="nav-item" onclick="showPage('nihss')">NIHSS (腦中風)</div>
-    <div class="nav-item" onclick="showPage('mmse')">MMSE (智能)</div>
-    <div class="nav-item" onclick="showPage('motor')">Motor & Reflex</div>
-    <div class="nav-item" onclick="showPage('updrs')">UPDRS (帕金森)</div>
-    <div class="nav-item" onclick="showPage('export')">Export & History</div>
-</nav>
+<div class="header">
+    <div class="menu">
+        <button onclick="show('cn')" id="b-cn">CN</button>
+        <button onclick="show('nihss')" id="b-nihss">NIHSS</button>
+        <button onclick="show('motor')" id="b-motor">Motor/Reflex</button>
+        <button onclick="show('mmse')" id="b-mmse">MMSE</button>
+        <button onclick="show('updrs')" id="b-updrs">UPDRS</button>
+        <button onclick="show('history')">History</button>
+        <button onclick="show('export')" class="export-btn">Generate Note</button>
+    </div>
+</div>
 
-<main>
-    <div class="tab-content">
-        
-        <!-- Page: CN -->
-        <div id="page-cn" class="page active">
-            <!-- CN I -->
-            <div class="section-title">CN I: Olfactory</div>
-            <div class="grid">
-                <div class="form-group"><label>Smell</label><select id="cn_smell" onchange="autoUpdate()"><option value="not performed">not performed</option><option value="+">+</option><option value="-">-</option></select></div>
-                <div class="form-group"><label>anosmia</label><select id="cn_anosmia" onchange="autoUpdate()"><option value="-">-</option><option value="+">+</option><option value="not performed">not performed</option></select></div>
-                <div class="form-group"><label>hyposmia</label><select id="cn_hyposmia" onchange="autoUpdate()"><option value="-">-</option><option value="+">+</option><option value="not performed">not performed</option></select></div>
-                <div class="form-group"><label>hyperosmia</label><select id="cn_hyperosmia" onchange="autoUpdate()"><option value="-">-</option><option value="+">+</option><option value="not performed">not performed</option></select></div>
-                <div class="form-group"><label>olfactory agnosia</label><select id="cn_olf_agnosia" onchange="autoUpdate()"><option value="-">-</option><option value="+">+</option><option value="not performed">not performed</option></select></div>
-            </div>
-            
-            <!-- CN II -->
-            <div class="section-title">CN II: Optic</div>
-            <div class="grid">
-                <div class="form-group"><label>Counts fingers</label><select id="cn_finger" onchange="autoUpdate()"><option value="-">-</option><option value="+">+</option><option value="not performed">not performed</option></select></div>
-                <div class="form-group"><label>hand motion</label><select id="cn_hand" onchange="autoUpdate()"><option value="-">-</option><option value="+">+</option><option value="not performed">not performed</option></select></div>
-                <div class="form-group"><label>light perception</label><select id="cn_light" onchange="autoUpdate()"><option value="-">-</option><option value="+">+</option><option value="not performed">not performed</option></select></div>
-                <div class="form-group"><label>hemianopia</label><select id="cn_hemi" onchange="autoUpdate()"><option value="-">-</option><option value="+">+</option><option value="not performed">not performed</option></select></div>
-                <div class="form-group"><label>quadrantanopia</label><select id="cn_quad" onchange="autoUpdate()"><option value="-">-</option><option value="+">+</option><option value="not performed">not performed</option></select></div>
-            </div>
+<div class="container">
+    <div style="background: #fffbe6; padding: 10px; margin-bottom: 20px; border-radius: 5px;">
+        <strong>Patient ID:</strong> <input type="text" id="v-id" style="width:200px" placeholder="Chart Number" oninput="autoUpdate()">
+        <button class="btn-action" onclick="saveToHistory()" style="background:#e67e22">Save Record</button>
+    </div>
 
-            <!-- CN III, IV, VI -->
-            <div class="section-title">CN III, IV, VI: Oculomotor, Trochlear, Abducens</div>
-            <div class="grid">
-                <div class="form-group"><label>Pupil isocoric R/L (e.g., 3mm/3mm)</label><input type="text" id="cn_pupil_size" value="3mm/3mm" oninput="autoUpdate()"></div>
-                <div class="form-group"><label>Light reflex R/L (e.g., +/+)</label><input type="text" id="cn_light_reflex" value="+/+" oninput="autoUpdate()"></div>
-                <div class="form-group"><label>RAPD (R)</label><select id="cn_rapd_r" onchange="autoUpdate()"><option value="-">-</option><option value="+">+</option><option value="not performed">not performed</option></select></div>
-                <div class="form-group"><label>RAPD (L)</label><select id="cn_rapd_l" onchange="autoUpdate()"><option value="-">-</option><option value="+">+</option><option value="not performed">not performed</option></select></div>
-                <div class="form-group"><label>Binocular diplopia</label><select id="cn_diplopia" onchange="autoUpdate()"><option value="-">-</option><option value="+">+</option><option value="not performed">not performed</option></select></div>
-            </div>
-            <div class="form-group" style="margin-top:10px;"><label style="flex:none;">EOM (空白填空):</label><input type="text" id="cn_eom" class="full-width-input" value="full in all directions" oninput="autoUpdate()"></div>
+    <!-- CN Section -->
+    <div id="s-cn" class="sec">
+        <div class="section-title">Cranial Nerves (CN)</div>
+        <div id="cn-form"></div>
+    </div>
 
-            <!-- CN V -->
-            <div class="section-title">CN V: Trigeminal</div>
-            <div class="grid">
-                <div class="form-group"><label>Corneal reflex (R)</label><select id="cn_corneal_r" onchange="autoUpdate()"><option value="+">+</option><option value="-">-</option><option value="not performed">not performed</option></select></div>
-                <div class="form-group"><label>Corneal reflex (L)</label><select id="cn_corneal_l" onchange="autoUpdate()"><option value="+">+</option><option value="-">-</option><option value="not performed">not performed</option></select></div>
-            </div>
+    <!-- NIHSS Section -->
+    <div id="s-nihss" class="sec hidden">
+        <div class="section-title">NIHSS 腦中風量表 (評分標準)</div>
+        <div id="nihss-form"></div>
+    </div>
 
-            <!-- CN VII -->
-            <div class="section-title">CN VII: Facial</div>
-            <div class="grid">
-                <div class="form-group"><label>Nasolabial fold shallowing</label><select id="cn_naso" onchange="autoUpdate()"><option value="-">-</option><option value="+">+</option><option value="not performed">not performed</option></select></div>
-            </div>
-
-            <!-- CN IX, X -->
-            <div class="section-title">CN IX, X: Glossopharyngeal, Vagus</div>
-            <div class="grid">
-                <div class="form-group"><label>Uvula deviation</label><select id="cn_uvula" onchange="autoUpdate()"><option value="-">-</option><option value="+">+</option><option value="not performed">not performed</option></select></div>
-                <div class="form-group"><label>Gag reflex</label><select id="cn_gag" onchange="autoUpdate()"><option value="+">+</option><option value="-">-</option><option value="not performed">not performed</option></select></div>
-                <div class="form-group"><label>dysarthria</label><select id="cn_dysarthria" onchange="autoUpdate()"><option value="-">-</option><option value="+">+</option><option value="not performed">not performed</option></select></div>
-            </div>
-
-            <!-- CN XI -->
-            <div class="section-title">CN XI: Accessory</div>
-            <div class="grid">
-                <div class="form-group"><label>SCM weakness</label><select id="cn_scm_weak" onchange="autoUpdate()"><option value="-">-</option><option value="+">+</option><option value="not performed">not performed</option></select></div>
-                <div class="form-group"><label>SCM atrophy</label><select id="cn_scm_atrophy" onchange="autoUpdate()"><option value="-">-</option><option value="+">+</option><option value="not performed">not performed</option></select></div>
-                <div class="form-group"><label>Trapezius weakness</label><select id="cn_trap_weak" onchange="autoUpdate()"><option value="-">-</option><option value="+">+</option><option value="not performed">not performed</option></select></div>
-                <div class="form-group"><label>Trapezius atrophy</label><select id="cn_trap_atrophy" onchange="autoUpdate()"><option value="-">-</option><option value="+">+</option><option value="not performed">not performed</option></select></div>
-            </div>
-
-            <!-- CN XII -->
-            <div class="section-title">CN XII: Hypoglossal</div>
-            <div class="grid">
-                <div class="form-group"><label>Tongue protruding deviation</label><select id="cn_tongue_dev" onchange="autoUpdate()"><option value="-">-</option><option value="+">+</option><option value="not performed">not performed</option></select></div>
-                <div class="form-group"><label>Tongue protruding atrophy</label><select id="cn_tongue_atrophy" onchange="autoUpdate()"><option value="-">-</option><option value="+">+</option><option value="not performed">not performed</option></select></div>
-                <div class="form-group"><label>Tongue protruding fasciculation</label><select id="cn_tongue_fasc" onchange="autoUpdate()"><option value="-">-</option><option value="+">+</option><option value="not performed">not performed</option></select></div>
-            </div>
+    <!-- MMSE Section -->
+    <div id="s-mmse" class="sec hidden">
+        <div class="section-title">MMSE 簡易智能狀態測驗</div>
+        <div id="mmse-form"></div>
+        <div class="row">
+            <div class="label">Recall Choice 正確數</div>
+            <div class="input-area"><input type="number" id="v-mmse-recall-choice" value="0" oninput="autoUpdate()"></div>
         </div>
-
-        <!-- Page: NIHSS -->
-        <div id="page-nihss" class="page">
-            <div class="section-title">NIHSS (National Institutes of Health Stroke Scale)</div>
-            <div class="grid" id="nihss-form">
-                <!-- JS dynamic render -->
-            </div>
-        </div>
-
-        <!-- Page: MMSE -->
-        <div id="page-mmse" class="page">
-            <div class="section-title">MMSE (Mini-Mental State Examination)</div>
-            <div class="grid" id="mmse-form">
-                <!-- JS dynamic render -->
-            </div>
-        </div>
-
-        <!-- Page: Motor -->
-        <div id="page-motor" class="page">
-            <div class="section-title">Motor Power (R/L)</div>
-            <div class="grid" id="motor-form"></div>
-        </div>
-
-        <!-- Page: UPDRS -->
-        <div id="page-updrs" class="page">
-            <div class="section-title">UPDRS Part III (Motor)</div>
-            <div class="grid" id="updrs-form"></div>
-        </div>
-
-        <!-- Page: Export -->
-        <div id="page-export" class="page">
-            <div class="section-title">Generated Medical Note</div>
-            <div class="form-group">
-                <label>Chart No (病歷號碼):</label>
-                <input type="text" id="chart_no" style="width: 200px;">
-                <button class="btn-success" onclick="saveHistory()">Save to History</button>
-            </div>
-            <textarea id="note-output" readonly></textarea>
-            <div class="btn-group">
-                <button class="btn-primary" onclick="copyNote()">Copy to Clipboard</button>
-                <button class="btn-primary" onclick="downloadNote()">Download .txt</button>
-            </div>
-            
-            <div class="section-title">History Records</div>
-            <ul id="history-list"></ul>
+        <div class="row">
+            <div class="label">Writing (寫一句話)</div>
+            <div class="input-area"><input type="text" id="v-mmse-writing" value="我是一個好人" oninput="autoUpdate()"></div>
         </div>
     </div>
 
-    <footer>
-        <div class="score-tag">NIHSS: <span id="total-nihss">0</span></div>
-        <div class="score-tag">MMSE: <span id="total-mmse">0</span>/30</div>
-        <div class="score-tag">UPDRS: <span id="total-updrs">0</span></div>
-    </footer>
-</main>
+    <!-- Motor Section -->
+    <div id="s-motor" class="sec hidden">
+        <div class="section-title">Motor & Reflex</div>
+        <div id="motor-form"></div>
+    </div>
+
+    <!-- UPDRS Section -->
+    <div id="s-updrs" class="sec hidden">
+        <div class="section-title">UPDRS Part III</div>
+        <div id="updrs-form"></div>
+    </div>
+
+    <!-- History Section -->
+    <div id="s-history" class="sec hidden">
+        <div class="section-title">History Records</div>
+        <div id="history-list"></div>
+    </div>
+
+    <!-- Export Section -->
+    <div id="s-export" class="sec hidden">
+        <div class="section-title">Structured Medical Note</div>
+        <textarea id="export-area" readonly></textarea>
+        <button class="btn-action" onclick="copyNote()">Copy to Clipboard</button>
+    </div>
+</div>
+
+<div class="footer-bar">
+    <div class="score-tag" style="color:#c0392b">NIHSS: <span id="t-nihss">0</span></div>
+    <div class="score-tag" style="color:#27ae60">MMSE: <span id="t-mmse">30</span>/30</div>
+    <div class="score-tag" style="color:#2980b9">UPDRS: <span id="t-updrs">0</span></div>
+</div>
 
 <script>
-    // --- Data Definitions with Chinese descriptions ---
-    const NIHSS_ITEMS = [
-        { id: '1a', label: '1a. 意識程度 (Consciousness)', options: [{v:0, t:'0: 清醒'},{v:1, t:'1: 嗜睡'},{v:2, t:'2: 呆滯'},{v:3, t:'3: 昏迷'}] },
-        { id: '1b', label: '1b. 意識程度 (詢問月份、年齡)', options: [{v:0, t:'0: 兩項皆正確'},{v:1, t:'1: 一項正確'},{v:2, t:'2: 兩項皆錯誤'}] },
-        { id: '1c', label: '1c. 意識程度 (執行命令: 睜閉眼、握放拳)', options: [{v:0, t:'0: 兩項皆正確'},{v:1, t:'1: 一項正確'},{v:2, t:'2: 兩項皆錯誤'}] },
-        { id: '2',  label: '2. 眼球運動 (令病人看左右)', options: [{v:0, t:'0: 左右眼活動正常'},{v:1, t:'1: 一或兩眼球部分限制'},{v:2, t:'2: 兩眼球偏向一側'}] },
-        { id: '3',  label: '3. 視野', options: [{v:0, t:'0: 四個視野皆看到'},{v:1, t:'1: 一側部分偏盲'},{v:2, t:'2: 一側偏盲'},{v:3, t:'3: 全盲'}] },
-        { id: '4',  label: '4. 面部肌肉 (露齒及閉眼)', options: [{v:0, t:'0: 正常'},{v:1, t:'1: 一側嘴角稍歪斜'},{v:2, t:'2: 一側嘴角不動'},{v:3, t:'3: 周邊型顏面麻痺'}] },
-        { id: '5a', label: '5a. 上肢運動功能 (左 L) 10秒', options: [{v:0, t:'0: 正常 (無掉落)'},{v:1, t:'1: 微掉'},{v:2, t:'2: 慢慢掉落'},{v:3, t:'3: 只能水平活動'},{v:4, t:'4: 無法活動'}] },
-        { id: '5b', label: '5b. 上肢運動功能 (右 R) 10秒', options: [{v:0, t:'0: 正常 (無掉落)'},{v:1, t:'1: 微掉'},{v:2, t:'2: 慢慢掉落'},{v:3, t:'3: 只能水平活動'},{v:4, t:'4: 無法活動'}] },
-        { id: '6a', label: '6a. 下肢運動功能 (左 L) 5秒', options: [{v:0, t:'0: 正常 (30度)'},{v:1, t:'1: 微掉'},{v:2, t:'2: 慢慢掉落'},{v:3, t:'3: 只能水平活動'},{v:4, t:'4: 無法活動'}] },
-        { id: '6b', label: '6b. 下肢運動功能 (右 R) 5秒', options: [{v:0, t:'0: 正常 (30度)'},{v:1, t:'1: 微掉'},{v:2, t:'2: 慢慢掉落'},{v:3, t:'3: 只能水平活動'},{v:4, t:'4: 無法活動'}] },
-        { id: '7',  label: '7. 肢體運動失調 (Ataxia)', options: [{v:0, t:'0: 無失衡或無法配合'},{v:1, t:'1: 一肢體失衡'},{v:2, t:'2: 兩肢體以上失衡'}] },
-        { id: '8',  label: '8. 感覺功能', options: [{v:0, t:'0: 正常'},{v:1, t:'1: 部分感覺喪失'},{v:2, t:'2: 全部感覺喪失(昏迷)'}] },
-        { id: '9',  label: '9. 語言功能 (看圖說故事)', options: [{v:0, t:'0: 表達詳細清楚'},{v:1, t:'1: 任一項缺損'},{v:2, t:'2: 嚴重缺損'},{v:3, t:'3: 完全失語'}] },
-        { id: '10', label: '10. 構音困難 (Dysarthria)', options: [{v:0, t:'0: 清晰'},{v:1, t:'1: 部分瞭解'},{v:2, t:'2: 無法瞭解'}] },
-        { id: '11', label: '11. 忽略 (Extinction/Inattention)', options: [{v:0, t:'0: 兩側皆感受到刺激'},{v:1, t:'1: 忽略一項'},{v:2, t:'2: 忽略兩項以上'}] }
-    ];
+// --- Data Definitions ---
 
-    const MMSE_ITEMS = [
-        { id: '1', label: '1. 今年是那一年？', options: [{v:1, t:'1: 正確'},{v:0, t:'0: 錯誤'}] },
-        { id: '2', label: '2. 現在是什麼季節？', options: [{v:1, t:'1: 正確'},{v:0, t:'0: 錯誤'}] },
-        { id: '3', label: '3. 今天是幾號？', options: [{v:1, t:'1: 正確'},{v:0, t:'0: 錯誤'}] },
-        { id: '4', label: '4. 今天是禮拜幾？', options: [{v:1, t:'1: 正確'},{v:0, t:'0: 錯誤'}] },
-        { id: '5', label: '5. 現在是那一個月份？', options: [{v:1, t:'1: 正確'},{v:0, t:'0: 錯誤'}] },
-        { id: '6', label: '6. 我們現在是在那一個省/國？', options: [{v:1, t:'1: 正確'},{v:0, t:'0: 錯誤'}] },
-        { id: '7', label: '7. 我們現在是在那一個縣、市？', options: [{v:1, t:'1: 正確'},{v:0, t:'0: 錯誤'}] },
-        { id: '8', label: '8. 這裡屬於哪一個區或是鄉鎮？', options: [{v:1, t:'1: 正確'},{v:0, t:'0: 錯誤'}] },
-        { id: '9', label: '9. 這個社區單位(醫院)的名稱？', options: [{v:1, t:'1: 正確'},{v:0, t:'0: 錯誤'}] },
-        { id: '10', label: '10. 現在我們是在幾樓？', options: [{v:1, t:'1: 正確'},{v:0, t:'0: 錯誤'}] },
-        { id: '11_1', label: '11-1. 重複名詞：藍色', options: [{v:1, t:'1: 正確'},{v:0, t:'0: 錯誤'}] },
-        { id: '11_2', label: '11-2. 重複名詞：悲傷', options: [{v:1, t:'1: 正確'},{v:0, t:'0: 錯誤'}] },
-        { id: '11_3', label: '11-3. 重複名詞：火車', options: [{v:1, t:'1: 正確'},{v:0, t:'0: 錯誤'}] },
-        { id: '12', label: '12. 100連續減7次數 (0-5分)', type: 'num', max: 5 },
-        { id: '13', label: '13. 回憶：藍色', options: [{v:1, t:'1: 正確'},{v:0, t:'0: 錯誤'}] },
-        { id: '14', label: '14. 回憶：悲傷', options: [{v:1, t:'1: 正確'},{v:0, t:'0: 錯誤'}] },
-        { id: '15', label: '15. 回憶：火車', options: [{v:1, t:'1: 正確'},{v:0, t:'0: 錯誤'}] },
-        { id: 'recall_choice', label: 'MMSE提示後答對數 (不計入總分)', type: 'num', max: 3, def: 0 },
-        { id: '16', label: '16. 辨識手錶', options: [{v:1, t:'1: 正確'},{v:0, t:'0: 錯誤'}] },
-        { id: '17', label: '17. 辨識鉛筆', options: [{v:1, t:'1: 正確'},{v:0, t:'0: 錯誤'}] },
-        { id: '18', label: '18. 朗讀：白紙真正寫黑字', options: [{v:1, t:'1: 正確'},{v:0, t:'0: 錯誤'}] },
-        { id: '19', label: '19. 唸出並執行：請閉上眼睛', options: [{v:1, t:'1: 正確'},{v:0, t:'0: 錯誤'}] },
-        { id: '20_1', label: '20-1. 拿紙', options: [{v:1, t:'1: 正確'},{v:0, t:'0: 錯誤'}] },
-        { id: '20_2', label: '20-2. 折半', options: [{v:1, t:'1: 正確'},{v:0, t:'0: 錯誤'}] },
-        { id: '20_3', label: '20-3. 置於大腿', options: [{v:1, t:'1: 正確'},{v:0, t:'0: 錯誤'}] },
-        { id: '21', label: '21. 寫一句語意完整的句子', options: [{v:1, t:'1: 正確'},{v:0, t:'0: 錯誤'}] },
-        { id: 'mmse_writing_text', label: '寫句子的內容', type: 'text', def: '我是一個好人' },
-        { id: '22', label: '22. 畫出交叉五邊形', options: [{v:1, t:'1: 正確'},{v:0, t:'0: 錯誤'}] }
-    ];
+const cnItems = [
+    { id: 'c1_smell', label: 'CN I: smell', mode: 'text', def: 'not performed' },
+    { id: 'c1_anosmia', label: 'anosmia', mode: 'select' },
+    { id: 'c1_hyposmia', label: 'hyposmia', mode: 'select' },
+    { id: 'c1_hyperosmia', label: 'hyperosmia', mode: 'select' },
+    { id: 'c1_agno', label: 'olfactory agnosia', mode: 'select' },
+    
+    { id: 'c2_va_cf', label: 'CN II Visual: Counts fingers', mode: 'select' },
+    { id: 'c2_va_hm', label: 'hand motion', mode: 'select' },
+    { id: 'c2_va_lp', label: 'light perception', mode: 'select' },
+    { id: 'c2_vf_con', label: 'Visual fields confrontation', mode: 'text', def: 'intact' },
+    { id: 'c2_vf_hemi', label: 'hemianopia', mode: 'select' },
+    { id: 'c2_vf_quad', label: 'quadrantanopia', mode: 'select' },
 
-    const MOTOR_ITEMS = ['Neck Flex/Ext', 'Shoulder Abd', 'Elbow Flex/Ext', 'Wrist Flex/Ext', 'Finger Flex/Ext', 'Grip', 'Hip Flexion', 'Knee Flex/Ext', 'Ankle Dor/Pla', 'Big Toe Ext'];
-    const UPDRS_ITEMS = ['Speech', 'Mask Face', 'Resting Tremor', 'Action Tremor', 'Rigidity', 'Finger Tapping', 'Grasping', 'RAM', 'Foot Tapping', 'Arise from chair', 'Posture', 'Gait', 'Postural Stability', 'Body Bradykinesia'];
+    { id: 'c3_pupil_size', label: 'CN III/IV/VI: Pupil Size R/L', mode: 'text', def: '3mm/3mm' },
+    { id: 'c3_pupil_lr', label: 'light reflex R/L', mode: 'text', def: '+/+' },
+    { id: 'c3_rapd', label: 'RAPD', mode: 'select' },
+    { id: 'c3_eom', label: 'EOM (空白填空)', mode: 'text', def: 'full' },
+    { id: 'c3_gaze', label: 'Primary gaze', mode: 'text', def: 'at neutral positions without diplopia' },
+    { id: 'c3_conv', label: 'Convergence', mode: 'text', def: 'fair' },
+    { id: 'c3_diplopia', label: 'Binocular diplopia', mode: 'select' },
+    { id: 'c3_pursuit', label: 'Pursuit', mode: 'text', def: 'smooth' },
+    { id: 'c3_saccade', label: 'Saccade', mode: 'text', def: 'no dysmetria' },
 
-    // --- Core Logic ---
+    { id: 'c5_corneal', label: 'CN V: Corneal reflex', mode: 'text', def: '+/+' },
+    { id: 'c5_sensory', label: 'Facial sensation', mode: 'text', def: 'intact and symmetric to pinprick and light touch' },
+    { id: 'c5_masseter', label: 'Masseter R/L', mode: 'text', def: 'full' },
+    { id: 'c5_temporalis', label: 'Temporalis R/L', mode: 'text', def: 'full' },
 
-    function initForm() {
-        // NIHSS
-        const nihssContainer = document.getElementById('nihss-form');
-        NIHSS_ITEMS.forEach(item => {
-            nihssContainer.innerHTML += `
-                <div class="form-group">
-                    <label>${item.label}</label>
-                    <select id="nihss_${item.id}" onchange="autoUpdate()">
-                        ${item.options.map(o => `<option value="${o.v}">${o.t}</option>`).join('')}
+    { id: 'c7_palsy', label: 'CN VII: Facial palsy type', mode: 'text', def: 'No Central/Peripheral type facial palsy' },
+    { id: 'c7_naso', label: 'Nasolabial fold shallowing', mode: 'select' },
+
+    { id: 'c8_hearing', label: 'CN VIII: Hearing ability', mode: 'text', def: 'fair by finger rubbing test' },
+    { id: 'c8_weber', label: 'Weber test', mode: 'text', def: 'no lateralization' },
+    { id: 'c8_rinne', label: 'Rinne test', mode: 'text', def: 'bilatareal AC>BC' },
+
+    { id: 'c9_uvula', label: 'CN IX,X: Uvula deviation', mode: 'select' },
+    { id: 'c9_gag', label: 'Gag reflex', mode: 'text', def: '+' },
+    { id: 'c9_arthria', label: 'dysarthria', mode: 'select' },
+
+    { id: 'c11_scm_w', label: 'CN XI SCM: weakness', mode: 'select' },
+    { id: 'c11_scm_a', label: 'atrophy', mode: 'select' },
+    { id: 'c11_scm_p', label: 'power', mode: 'text', def: '5/5' },
+    { id: 'c11_trap_w', label: 'Trapezius: weakness', mode: 'select' },
+    { id: 'c11_trap_a', label: 'atrophy', mode: 'select' },
+    { id: 'c11_trap_p', label: 'power', mode: 'text', def: '5/5' },
+
+    { id: 'c12_tongue_d', label: 'CN XII Tongue: deviation', mode: 'select' },
+    { id: 'c12_tongue_a', label: 'atrophy', mode: 'select' },
+    { id: 'c12_tongue_f', label: 'fasciculation', mode: 'select' }
+];
+
+const nihssConfig = [
+    { id: '1a', n: '1a. 意識程度', opts: ['0-清醒','1-嗜睡','2-呆滯','3-昏迷'] },
+    { id: '1b', n: '1b. 意識詢問(月、年齡)', opts: ['0-兩項正確','1-一項正確','2-兩項錯誤'] },
+    { id: '1c', n: '1c. 執行命令(睜閉眼、握放手)', opts: ['0-兩項正確','1-一項正確','2-兩項錯誤'] },
+    { id: '2',  n: '2. 眼球運動(看左右)', opts: ['0-正常','1-部分限制','2-偏向一側'] },
+    { id: '3',  n: '3. 視野', opts: ['0-無偏盲','1-部分偏盲','2-完全偏盲','3-全盲'] },
+    { id: '4',  n: '4. 面部肌肉(露齒、閉眼)', opts: ['0-正常','1-稍歪斜','2-一側不動','3-全癱'] },
+    { id: '5a', n: '5a. 左上肢運動(10秒)', opts: ['0-正常','1-微掉','2-慢慢掉','3-只能水平','4-無法活動'] },
+    { id: '5b', n: '5b. 右上肢運動(10秒)', opts: ['0-正常','1-微掉','2-慢慢掉','3-只能水平','4-無法活動'] },
+    { id: '6a', n: '6a. 左下肢運動(5秒)', opts: ['0-正常','1-微掉','2-慢慢掉','3-只能水平','4-無法活動'] },
+    { id: '6b', n: '6b. 右下肢運動(5秒)', opts: ['0-正常','1-微掉','2-慢慢掉','3-只能水平','4-無法活動'] },
+    { id: '7',  n: '7. 肢體失調(手指鼻)', opts: ['0-無','1-一肢體','2-兩肢體以上'] },
+    { id: '8',  n: '8. 感覺功能', opts: ['0-正常','1-部分喪失','2-全部喪失'] },
+    { id: '9',  n: '9. 語言功能(看圖說故事)', opts: ['0-正常','1-輕微缺損','2-嚴重缺損','3-完全失語'] },
+    { id: '10', n: '10. 構音困難(口齒清晰度)', opts: ['0-正常','1-部分瞭解','2-無法瞭解'] },
+    { id: '11', n: '11. 忽略症', opts: ['0-無','1-視/觸/聽其中一項','2-兩項以上忽略'] }
+];
+
+const mmseConfig = [
+    { id: 'm1', n: '1. 今年是那一年？', max: 1 },
+    { id: 'm2', n: '2. 現在是什麼季節？', max: 1 },
+    { id: 'm3', n: '3. 今天是幾號？', max: 1 },
+    { id: 'm4', n: '4. 今天是禮拜幾？', max: 1 },
+    { id: 'm5', n: '5. 現在是那一個月份？', max: 1 },
+    { id: 'm6', n: '6. 現在是在那一個省(市)？', max: 1 },
+    { id: 'm7', n: '7. 現在是在那一個縣(市)？', max: 1 },
+    { id: 'm8', n: '8. 這裡屬於哪一個區(鄉鎮)？', max: 1 },
+    { id: 'm9', n: '9. 這個社區單位(醫院)名稱？', max: 1 },
+    { id: 'm10', n: '10. 現在我們是在幾樓？', max: 1 },
+    { id: 'm11', n: '11. 複述：藍色、悲傷、火車', max: 3 },
+    { id: 'm12', n: '12. 100連續減7 (五次)', max: 5 },
+    { id: 'm13', n: '13. 回憶剛才三樣東西', max: 3 },
+    { id: 'm14', n: '14. 辨認手錶', max: 1 },
+    { id: 'm15', n: '15. 辨認鉛筆', max: 1 },
+    { id: 'm16', n: '16. 複誦：白紙真正寫黑字', max: 1 },
+    { id: 'm17', n: '17. 執行：請閉上眼睛', max: 1 },
+    { id: 'm18', n: '18. 三步驟指令(拿紙/折半/放腿)', max: 3 },
+    { id: 'm19', n: '19. 寫一個完整的句子', max: 1 },
+    { id: 'm20', n: '20. 畫圖 (兩個五邊形交叉)', max: 1 }
+];
+
+const motorItems = ["Neck Flex/Ext", "Shoulder Abd", "Elbow Flex/Ext", "Wrist Flex/Ext", "Finger Flex/Ext", "Grip", "Hip Flexion", "Knee Flex/Ext", "Ankle Dorsi/Plantar", "Big Toe Ext"];
+
+// --- Logic ---
+
+function init() {
+    // CN
+    const cnForm = document.getElementById('cn-form');
+    cnItems.forEach(item => {
+        let html = `<div class="row"><div class="label">${item.label}</div><div class="input-area">`;
+        if(item.mode === 'select') {
+            html += `<select class="v-cn" id="${item.id}" onchange="autoUpdate()"><option value="-">-</option><option value="+">+</option><option value="not performed">N/P</option></select>`;
+        } else {
+            html += `<input type="text" class="v-cn" id="${item.id}" value="${item.def}" oninput="autoUpdate()">`;
+        }
+        html += `</div></div>`;
+        cnForm.innerHTML += html;
+    });
+
+    // NIHSS
+    const nihssForm = document.getElementById('nihss-form');
+    nihssConfig.forEach(item => {
+        nihssForm.innerHTML += `
+            <div class="row">
+                <div class="label">${item.n}</div>
+                <div class="input-area">
+                    <select class="v-nihss" id="ni_${item.id}" onchange="autoUpdate()">
+                        ${item.opts.map((o, idx) => `<option value="${idx}">${o}</option>`).join('')}
                     </select>
-                </div>`;
-        });
+                </div>
+            </div>`;
+    });
 
-        // MMSE
-        const mmseContainer = document.getElementById('mmse-form');
-        MMSE_ITEMS.forEach(item => {
-            if (item.options) {
-                mmseContainer.innerHTML += `
-                    <div class="form-group">
-                        <label>${item.label}</label>
-                        <select id="mmse_${item.id}" onchange="autoUpdate()">
-                            ${item.options.map(o => `<option value="${o.v}">${o.t}</option>`).join('')}
-                        </select>
-                    </div>`;
-            } else if (item.type === 'num') {
-                mmseContainer.innerHTML += `
-                    <div class="form-group">
-                        <label>${item.label}</label>
-                        <input type="number" id="mmse_${item.id}" value="${item.def !== undefined ? item.def : item.max}" min="0" max="${item.max}" oninput="autoUpdate()">
-                    </div>`;
-            } else if (item.type === 'text') {
-                mmseContainer.innerHTML += `
-                    <div class="form-group" style="grid-column: span 2;">
-                        <label>${item.label}</label>
-                        <input type="text" id="${item.id}" value="${item.def}" class="full-width-input" oninput="autoUpdate()">
-                    </div>`;
-            }
-        });
+    // MMSE
+    const mmseForm = document.getElementById('mmse-form');
+    mmseConfig.forEach(item => {
+        mmseForm.innerHTML += `
+            <div class="row">
+                <div class="label">${item.n}</div>
+                <div class="input-area">
+                    <input type="number" class="v-mmse" id="${item.id}" value="${item.max}" min="0" max="${item.max}" oninput="autoUpdate()">
+                </div>
+            </div>`;
+    });
 
-        // Motor
-        const motorContainer = document.getElementById('motor-form');
-        MOTOR_ITEMS.forEach(item => {
-            motorContainer.innerHTML += `
-                <div class="form-group">
-                    <label>${item}</label>
-                    <div>
-                        <select id="motor_${item}_R" onchange="autoUpdate()">
-                            ${[5,4,3,2,1,0].map(v => `<option value="${v}">${v}/5</option>`).join('')}
-                        </select> / 
-                        <select id="motor_${item}_L" onchange="autoUpdate()">
-                            ${[5,4,3,2,1,0].map(v => `<option value="${v}">${v}/5</option>`).join('')}
-                        </select>
-                    </div>
-                </div>`;
-        });
+    // Motor
+    const motorForm = document.getElementById('motor-form');
+    motorItems.forEach(it => {
+        motorForm.innerHTML += `
+            <div class="row">
+                <div class="label">${it} (R/L)</div>
+                <div class="input-area">
+                    <select class="v-motor-r" onchange="autoUpdate()">${[5,4,3,2,1,0].map(v=>`<option>${v}</option>`).join('')}</select>
+                    <select class="v-motor-l" onchange="autoUpdate()">${[5,4,3,2,1,0].map(v=>`<option>${v}</option>`).join('')}</select>
+                </div>
+            </div>`;
+    });
 
-        // UPDRS
-        const updrsContainer = document.getElementById('updrs-form');
-        UPDRS_ITEMS.forEach(item => {
-            updrsContainer.innerHTML += `
-                <div class="form-group">
-                    <label>${item}</label>
-                    <select id="updrs_${item}" onchange="autoUpdate()">
-                        ${[0,1,2,3,4].map(v => `<option value="${v}">${v}</option>`).join('')}
-                    </select>
-                </div>`;
-        });
+    autoUpdate();
+}
 
-        autoUpdate();
-        loadHistoryList();
-    }
+function show(id) {
+    document.querySelectorAll('.sec').forEach(s => s.classList.add('hidden'));
+    document.getElementById('s-' + id).classList.remove('hidden');
+    if(id === 'export') generateNote();
+    if(id === 'history') renderHistory();
+}
 
-    function showPage(pageId) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        document.getElementById('page-' + pageId).classList.add('active');
-        event.currentTarget.classList.add('active');
-        if (pageId === 'export') generateNote();
-    }
+function autoUpdate() {
+    let nihss = 0;
+    document.querySelectorAll('.v-nihss').forEach(s => nihss += parseInt(s.value));
+    document.getElementById('t-nihss').innerText = nihss;
 
-    function autoUpdate() {
-        // NIHSS Total
-        let nihssTotal = 0;
-        NIHSS_ITEMS.forEach(i => nihssTotal += parseInt(document.getElementById(`nihss_${i.id}`).value));
-        document.getElementById('total-nihss').innerText = nihssTotal;
+    let mmse = 0;
+    document.querySelectorAll('.v-mmse').forEach(i => mmse += parseInt(i.value || 0));
+    document.getElementById('t-mmse').innerText = mmse;
+}
 
-        // MMSE Total
-        let mmseTotal = 0;
-        MMSE_ITEMS.forEach(i => {
-            if (i.id !== 'recall_choice' && i.type !== 'text') {
-                mmseTotal += parseInt(document.getElementById(`mmse_${i.id}`).value || 0);
-            }
-        });
-        document.getElementById('total-mmse').innerText = mmseTotal;
+function generateNote() {
+    const id = document.getElementById('v-id').value;
+    const nTotal = document.getElementById('t-nihss').innerText;
+    const n = (id) => document.getElementById('ni_'+id).value;
+    const nihssStr = `NIHSS = ${nTotal} (${n('1a')}${n('1b')}${n('1c')} ${n('2')}${n('3')}${n('4')} ${n('5a')}${n('5b')}${n('6a')}${n('6b')} ${n('7')}${n('8')}${n('9')}${n('10')}${n('11')})`;
 
-        // UPDRS Total
-        let updrsTotal = 0;
-        UPDRS_ITEMS.forEach(i => updrsTotal += parseInt(document.getElementById(`updrs_${i}`).value));
-        document.getElementById('total-updrs').innerText = updrsTotal;
-    }
+    const getCN = (id) => document.getElementById(id).value;
 
-    function generateNote() {
-        const nihssTotal = document.getElementById('total-nihss').innerText;
-        const mmseTotal = document.getElementById('total-mmse').innerText;
-        
-        // NIHSS Formatted Note
-        const n = (id) => document.getElementById(`nihss_${id}`).value;
-        const nihssStr = `NIHSS = ${nihssTotal} (${n('1a')}${n('1b')}${n('1c')} ${n('2')}${n('3')}${n('4')} ${n('5a')}${n('5b')}${n('6a')}${n('6b')} ${n('7')}${n('8')}${n('9')}${n('10')}${n('11')})`;
-
-        // CN Values
-        const c = (id) => document.getElementById(`cn_${id}`).value;
-        
-        // MMSE Calc parts
-        const mm = (id) => parseInt(document.getElementById(`mmse_${id}`).value || 0);
-        const ori_time = mm('1')+mm('2')+mm('3')+mm('4')+mm('5');
-        const ori_place = mm('6')+mm('7')+mm('8')+mm('9')+mm('10');
-        const reg_sum = mm('11_1')+mm('11_2')+mm('11_3');
-        const recall_sum = mm('13')+mm('14')+mm('15');
-        const naming_sum = mm('16')+mm('17');
-        const step_sum = mm('20_1')+mm('20_2')+mm('20_3');
-
-        const template = `【Neurological examination】
+    let note = `【Neurological examination】
+Patient ID: ${id || 'N/A'}
 . Consciousness: clear
 
 *Cranial nerve
-CN I :   smell (${c('smell')}) , anosmia(${c('anosmia')}), hyposmia(${c('hyposmia')}), hyperosmia(${c('hyperosmia')}), olfactory agnosia(${c('olf_agnosia')})
-CN II:   Visual acuity: Counts fingers(${c('finger')}), hand motion(${c('hand')}), light perception(${c('light')})
-         Visual fields: confrontation test-intact
-                        hemianopia(${c('hemi')}), quadrantanopia(${c('quad')})
+CN I :   smell(${getCN('c1_smell')}), anosmia(${getCN('c1_anosmia')}), hyposmia(${getCN('c1_hyposmia')}), hyperosmia(${getCN('c1_hyperosmia')}), olfactory agnosia(${getCN('c1_agno')})
+CN II:   Visual acuity: Counts fingers(${getCN('c2_va_cf')}), hand motion(${getCN('c2_va_hm')}), light perception(${getCN('c2_va_lp')})
+         Visual fields: confrontation test-${getCN('c2_vf_con')}, hemianopia(${getCN('c2_vf_hemi')}), quadrantanopia(${getCN('c2_vf_quad')})
 CN III, IV, VI:
-         Pupil: isocoric R/L: ${document.getElementById('cn_pupil_size').value}, light reflex R/L: ${document.getElementById('cn_light_reflex').value} , RAPD(${c('rapd_r')}/${c('rapd_l')})
-         EOM: ${document.getElementById('cn_eom').value}
-         Primary gaze: at neutral positions without diplopia; Convergence: fair
-         Binocular diplopia(${c('diplopia')}); Pursuit: smooth, Saccade: no dysmetria
-CN V:    Corneal reflex(${c('corneal_r')}/${c('corneal_l')})
-         Facial sensation: intact and symmetric to pinprick and light touch
-         Masseter R/L: full, Temporalis R/L: full
-CN VII : No Central/Peripheral type facial palsy 
-         Nasolabial fold shallowing(${c('naso')}) 
-CN VIII: Bilateral hearing ability: fair by finger rubbing test
-         Weber test: no lateralization; Rinne test: bilatareal AC>BC
-CN IX,X: Uvula deviation(${c('uvula')}), Gag reflex (${c('gag')}), dysarthria(${c('dysarthria')})
-CN XI:   SCM: weakness(${c('scm_weak')}), atrophy(${c('scm_atrophy')}), 5/5; Trapezius: weakness(${c('trap_weak')}), atrophy(${c('trap_atrophy')}), 5/5
-CN XII:  Tongue protruding: deviation(${c('tongue_dev')}), atrophy(${c('tongue_atrophy')}), fasciculation(${c('tongue_fasc')})
+         Pupil: isocoric R/L: ${getCN('c3_pupil_size')}, light reflex R/L: ${getCN('c3_pupil_lr')}, RAPD(${getCN('c3_rapd')})
+         EOM: ${getCN('c3_eom')}
+         Primary gaze: ${getCN('c3_gaze')}
+         Convergence: ${getCN('c3_conv')}
+         Binocular diplopia(${getCN('c3_diplopia')}); Pursuit: ${getCN('c3_pursuit')}, Saccade: ${getCN('c3_saccade')}
+CN V:    Corneal reflex(${getCN('c5_corneal')}); Facial sensation: ${getCN('c5_sensory')}
+         Masseter R/L: ${getCN('c5_masseter')}, Temporalis R/L: ${getCN('c5_temporalis')}
+CN VII : ${getCN('c7_palsy')}; Nasolabial fold shallowing(${getCN('c7_naso')})
+CN VIII: Hearing: ${getCN('c8_hearing')}; Weber: ${getCN('c8_weber')}; Rinne: ${getCN('c8_rinne')}
+CN IX,X: Uvula deviation(${getCN('c9_uvula')}), Gag reflex (${getCN('c9_gag')}), dysarthria(${getCN('c9_arthria')})
+CN XI:   SCM: weakness(${getCN('c11_scm_w')}), atrophy(${getCN('c11_scm_a')}), ${getCN('c11_scm_p')}; Trapezius: weakness(${getCN('c11_trap_w')}), atrophy(${getCN('c11_trap_a')}), ${getCN('c11_trap_p')}
+CN XII:  Tongue protruding: deviation(${getCN('c12_tongue_d')}), atrophy(${getCN('c12_tongue_a')}), fasciculation(${getCN('c12_tongue_f')})
 
-*Motor
-Motor inspection: muscle wasting(-), fasciculation(-)
-Muscle power:(R/L)
-${MOTOR_ITEMS.map(i => ` ${i.padEnd(16)} ${document.getElementById(`motor_${i}_R`).value}/5 / ${document.getElementById(`motor_${i}_L`).value}/5`).join('\n')}
+*Motor Function
+Muscle Power (R/L):
+${motorItems.map((it, idx) => ` ${it}: ${document.querySelectorAll('.v-motor-r')[idx].value}/${document.querySelectorAll('.v-motor-l')[idx].value}`).join('\n')}
 
-*NIHSS Section
-${nihssStr}
+*MMSE Total: ${document.getElementById('t-mmse').innerText}/30
+ Orientation: time(${calcMMSE(0,5)}/5) place(${calcMMSE(5,5)}/5)
+ 3-item registration(${document.getElementById('m11').value}/3)("黃色、生氣、火車")
+ series-7(${document.getElementById('m12').value}/5)
+ 3-item recall(${document.getElementById('m13').value}/3)(${document.getElementById('v-mmse-recall-choice').value} correct by choice)
+ naming(${parseInt(document.getElementById('m14').value)+parseInt(document.getElementById('m15').value)}/2) repeat(${document.getElementById('m16').value}/1) reading(${document.getElementById('m17').value}/1) writing(${document.getElementById('m19').value}/1)("${document.getElementById('v-mmse-writing').value}")
+ 3-step orders(${document.getElementById('m18').value}/3)
+ construction(${document.getElementById('m20').value}/1)
 
-*UPDRS part III
-${UPDRS_ITEMS.map(u => `${u}: ${document.getElementById('updrs_'+u).value}`).join(', ')}
+${nihssStr}`;
 
-*Higher cortical functions/cognition
-. MMSE(${mmseTotal}/30):
-       - Orientation: time(${ori_time}/5) place(${ori_place}/5)
-       - 3-item registration(${reg_sum}/3)("黃色、生氣、火車")
-       - series-7(${mm('12')}/5)
-       - 3-item recall(${recall_sum}/3)(${mm('recall_choice')} correct by choice, another failed even choice)
-       - naming(${naming_sum}/2) repeat(${mm('18')}/1) reading(${mm('19')}/1) writing(${mm('21')}/1)("${document.getElementById('mmse_writing_text').value}")
-       - 3-step orders(${step_sum}/3)
-       - construction(${mm('22')}/1)`;
+    document.getElementById('export-area').value = note;
+}
 
-        document.getElementById('note-output').value = template;
+function calcMMSE(start, len) {
+    let sum = 0;
+    for(let i=start; i<start+len; i++) {
+        sum += parseInt(document.querySelectorAll('.v-mmse')[i].value || 0);
     }
+    return sum;
+}
 
-    // --- Persistence ---
-    function saveHistory() {
-        const chartNo = document.getElementById('chart_no').value;
-        if (!chartNo) return alert("請輸入病歷號碼");
-        
-        const data = {};
-        document.querySelectorAll('select, input').forEach(el => data[el.id] = el.value);
-        localStorage.setItem('NE_Note_' + chartNo, JSON.stringify(data));
-        loadHistoryList();
-        alert("歷史紀錄儲存成功");
-    }
+function copyNote() {
+    const area = document.getElementById('export-area');
+    area.select();
+    document.execCommand('copy');
+    alert("Copied to clipboard!");
+}
 
-    function loadHistoryList() {
-        const list = document.getElementById('history-list');
-        list.innerHTML = "";
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key.startsWith('NE_Note_')) {
-                const chartNo = key.replace('NE_Note_', '');
-                list.innerHTML += `
-                    <li class="history-item">
-                        <span>病歷號: ${chartNo}</span>
-                        <div>
-                            <button class="btn-primary" onclick="loadRecord('${key}')">載入</button>
-                            <button onclick="deleteRecord('${key}')" style="background:#e74c3c; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">刪除</button>
-                        </div>
-                    </li>`;
-            }
-        }
-    }
+function saveToHistory() {
+    const id = document.getElementById('v-id').value;
+    if(!id) return alert("Please enter Patient ID");
+    const data = {
+        id: id,
+        time: new Date().toLocaleString(),
+        values: Array.from(document.querySelectorAll('input, select')).map(el => ({id: el.id, val: el.value, cls: el.className}))
+    };
+    let history = JSON.parse(localStorage.getItem('ne_history') || '[]');
+    history.unshift(data);
+    localStorage.setItem('ne_history', JSON.stringify(history));
+    alert("Saved!");
+}
 
-    function loadRecord(key) {
-        const data = JSON.parse(localStorage.getItem(key));
-        for (let id in data) {
-            const el = document.getElementById(id);
-            if (el) el.value = data[id];
-        }
-        document.getElementById('chart_no').value = key.replace('NE_Note_', '');
-        autoUpdate();
-        alert("載入成功");
-    }
+function renderHistory() {
+    const list = document.getElementById('history-list');
+    const history = JSON.parse(localStorage.getItem('ne_history') || '[]');
+    list.innerHTML = history.map((h, idx) => `
+        <div style="padding:10px; border:1px solid #ddd; margin-bottom:5px; display:flex; justify-content:space-between">
+            <span><strong>${h.id}</strong> (${h.time})</span>
+            <button onclick="loadHistory(${idx})">Load</button>
+        </div>
+    `).join('');
+}
 
-    function deleteRecord(key) {
-        if(confirm("確定要刪除此筆病歷紀錄嗎？")) {
-            localStorage.removeItem(key);
-            loadHistoryList();
-        }
-    }
+function loadHistory(idx) {
+    const history = JSON.parse(localStorage.getItem('ne_history') || '[]');
+    const data = history[idx];
+    document.getElementById('v-id').value = data.id;
+    data.values.forEach(item => {
+        const el = document.getElementById(item.id);
+        if(el) el.value = item.val;
+    });
+    autoUpdate();
+    alert("Record Loaded");
+}
 
-    function copyNote() {
-        const copyText = document.getElementById("note-output");
-        copyText.select();
-        document.execCommand("copy");
-        alert("病歷已成功複製到剪貼簿！");
-    }
-
-    function downloadNote() {
-        const text = document.getElementById("note-output").value;
-        const blob = new Blob([text], { type: "text/plain" });
-        const anchor = document.createElement("a");
-        anchor.download = `NE_Note_${document.getElementById('chart_no').value || 'export'}.txt`;
-        anchor.href = window.URL.createObjectURL(blob);
-        anchor.click();
-    }
-
-    window.onload = initForm;
+window.onload = init;
 </script>
 </body>
 </html>
