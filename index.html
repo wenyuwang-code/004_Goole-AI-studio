@@ -8,46 +8,45 @@
         :root { --primary: #263238; --accent: #ff5722; --bg: #eceff1; --white: #ffffff; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; font-family: 'Consolas', -apple-system, sans-serif; background: var(--bg); padding-bottom: 120px; }
-        
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--primary); display: flex; height: 70px; z-index: 2000; box-shadow: 0 -2px 10px rgba(0,0,0,0.3); }
-        .nav-item { flex: 1; color: #b0bec5; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; border-top: 3px solid transparent; }
-        .nav-item.active { color: white; background: #37474f; border-top: 3px solid var(--accent); }
+code
+Code
+.bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--primary); display: flex; height: 70px; z-index: 2000; box-shadow: 0 -2px 10px rgba(0,0,0,0.3); }
+    .nav-item { flex: 1; color: #b0bec5; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; border-top: 3px solid transparent; }
+    .nav-item.active { color: white; background: #37474f; border-top: 3px solid var(--accent); }
 
-        .top-bar { position: sticky; top: 0; background: var(--white); padding: 10px; display: flex; gap: 8px; z-index: 1000; border-bottom: 1px solid #cfd8dc; }
-        .top-bar input { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
-        .btn-action { padding: 8px 12px; border-radius: 4px; border: none; font-weight: bold; font-size: 12px; cursor: pointer; color: white; }
+    .top-bar { position: sticky; top: 0; background: var(--white); padding: 10px; display: flex; gap: 8px; z-index: 1000; border-bottom: 1px solid #cfd8dc; }
+    .top-bar input { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+    .btn-action { padding: 8px 12px; border-radius: 4px; border: none; font-weight: bold; font-size: 12px; cursor: pointer; color: white; }
 
-        .container { padding: 10px; max-width: 800px; margin: auto; }
-        .card { background: var(--white); padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .card-title { font-weight: bold; font-size: 16px; margin-bottom: 10px; color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 5px; }
+    .container { padding: 10px; max-width: 800px; margin: auto; }
+    .card { background: var(--white); padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .card-title { font-weight: bold; font-size: 16px; margin-bottom: 10px; color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 5px; }
 
-        .row { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #f5f5f5; justify-content: space-between; }
-        .row label { font-size: 13px; flex: 3; padding-right: 10px; }
-        .input-wrap { flex: 4; display: flex; gap: 5px; }
-        select, input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; width: 100%; }
+    .row { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #f5f5f5; justify-content: space-between; }
+    .row label { font-size: 13px; flex: 3; padding-right: 10px; }
+    .input-wrap { flex: 4; display: flex; gap: 5px; }
+    select, input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; width: 100%; }
 
-        /* EOM 專用網格樣式 */
-        .eom-grid-container { display: flex; gap: 10px; justify-content: space-between; margin-top: 10px; background: #f9f9f9; padding: 10px; border-radius: 5px; }
-        .eye-box { flex: 1; text-align: center; }
-        .eye-label { font-size: 11px; font-weight: bold; margin-bottom: 5px; color: #555; }
-        .grid-3x2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
-        .eom-select { padding: 4px; font-size: 11px; }
+    /* EOM 專用網格樣式 */
+    .eom-grid-container { display: flex; gap: 10px; justify-content: space-between; margin-top: 10px; background: #f9f9f9; padding: 10px; border-radius: 5px; }
+    .eye-box { flex: 1; text-align: center; }
+    .eye-label { font-size: 11px; font-weight: bold; margin-bottom: 5px; color: #555; }
+    .grid-3x2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
+    .eom-select { padding: 4px; font-size: 11px; }
 
-        .localization-display { background: #e3f2fd; padding: 15px; border-left: 6px solid #2196f3; margin-top: 20px; border-radius: 4px; font-size: 14px; line-height: 1.6; }
-        .loc-item { margin-bottom: 5px; color: #0d47a1; font-weight: bold; }
+    .localization-display { background: #e3f2fd; padding: 15px; border-left: 6px solid #2196f3; margin-top: 20px; border-radius: 4px; font-size: 14px; line-height: 1.6; }
+    .loc-item { margin-bottom: 5px; color: #0d47a1; font-weight: bold; }
 
-        .score-footer { position: fixed; bottom: 70px; width: 100%; background: rgba(255,255,255,0.95); height: 40px; display: flex; align-items: center; justify-content: space-around; border-top: 1px solid #ddd; font-weight: bold; font-size: 12px; z-index: 1999; }
-        #note-output { width: 100%; height: 350px; font-family: 'Consolas', 'Monaco', monospace; white-space: pre; font-size: 12px; border: 1px solid #333; padding: 10px; background: #fdfdfd; overflow-x: auto; }
-        .hidden { display: none; }
-    </style>
+    .score-footer { position: fixed; bottom: 70px; width: 100%; background: rgba(255,255,255,0.95); height: 40px; display: flex; align-items: center; justify-content: space-around; border-top: 1px solid #ddd; font-weight: bold; font-size: 12px; z-index: 1999; }
+    #note-output { width: 100%; height: 350px; font-family: 'Consolas', 'Monaco', monospace; white-space: pre; font-size: 12px; border: 1px solid #333; padding: 10px; background: #fdfdfd; overflow-x: auto; }
+    .hidden { display: none; }
+</style>
 </head>
 <body>
-
 <div class="top-bar">
     <input type="text" id="v-id" placeholder="Chart No / 病歷號">
     <button class="btn-action" style="background:#4caf50" onclick="setAllNormal()">一鍵正常</button>
 </div>
-
 <div class="container">
     <div id="s-cn" class="sec">
         <div class="card">
@@ -56,48 +55,47 @@
             <div class="row"><label>Verbal (V)</label><select id="gcs_v" onchange="autoUpdate()"><option value="5">5-Orient.</option><option value="4">4-Conf.</option><option value="3">3-Inapp.</option><option value="2">2-Incom.</option><option value="1">1-None</option><option value="NT">NT</option></select></div>
             <div class="row"><label>Motor (M)</label><select id="gcs_m" onchange="autoUpdate()"><option value="6">6-Obeys</option><option value="5">5-Loc.</option><option value="4">4-Withd.</option><option value="3">3-Flex.</option><option value="2">2-Ext.</option><option value="1">1-None</option><option value="NT">NT</option></select></div>
         </div>
-        
-        <div class="card">
-            <div class="card-title">Cranial Nerves (EOM)</div>
-            <div class="eom-grid-container">
-                <div class="eye-box">
-                    <div class="eye-label">Right Eye (R)</div>
-                    <div class="grid-3x2" id="eom-r-grid"></div>
-                </div>
-                <div class="eye-box">
-                    <div class="eye-label">Left Eye (L)</div>
-                    <div class="grid-3x2" id="eom-l-grid"></div>
-                </div>
+code
+Code
+<div class="card">
+        <div class="card-title">Cranial Nerves (EOM)</div>
+        <div class="eom-grid-container">
+            <div class="eye-box">
+                <div class="eye-label">Right Eye (R)</div>
+                <div class="grid-3x2" id="eom-r-grid"></div>
             </div>
-            <div id="cn-form"></div>
-        </div>
-    </div>
-
-    <!-- 其餘 Section (NIHSS, UPDRS, Motor, MMSE) 保持不變 -->
-    <div id="s-nihss" class="sec hidden"><div class="card"><div class="card-title">NIHSS</div><div id="nihss-form"></div></div></div>
-    <div id="s-updrs" class="sec hidden"><div class="card"><div class="card-title">UPDRS Part III</div><div id="updrs-form"></div></div></div>
-    <div id="s-motor" class="sec hidden"><div class="card"><div class="card-title">Motor Power</div><div id="motor-form"></div></div></div>
-    <div id="s-mmse" class="sec hidden"><div class="card"><div class="card-title">MMSE</div><div id="mmse-form"></div></div></div>
-
-    <div id="s-note" class="sec hidden">
-        <div class="card">
-            <div class="card-title">Medical Note Export</div>
-            <textarea id="note-output" readonly></textarea>
-            <button class="btn-action" style="width:100%; margin-top:10px; background:#263238" onclick="copyNote()">複製病歷文字</button>
-            <div class="localization-display">
-                <div style="font-weight:bold; margin-bottom:10px; border-bottom:1px solid #90caf9">Initial Localization Suggestions:</div>
-                <div id="loc-content">待輸入資料...</div>
+            <div class="eye-box">
+                <div class="eye-label">Left Eye (L)</div>
+                <div class="grid-3x2" id="eom-l-grid"></div>
             </div>
         </div>
+        <div id="cn-form"></div>
     </div>
 </div>
 
+<!-- 其餘 Section (NIHSS, UPDRS, Motor, MMSE) 保持不變 -->
+<div id="s-nihss" class="sec hidden"><div class="card"><div class="card-title">NIHSS</div><div id="nihss-form"></div></div></div>
+<div id="s-updrs" class="sec hidden"><div class="card"><div class="card-title">UPDRS Part III</div><div id="updrs-form"></div></div></div>
+<div id="s-motor" class="sec hidden"><div class="card"><div class="card-title">Motor Power</div><div id="motor-form"></div></div></div>
+<div id="s-mmse" class="sec hidden"><div class="card"><div class="card-title">MMSE</div><div id="mmse-form"></div></div></div>
+
+<div id="s-note" class="sec hidden">
+    <div class="card">
+        <div class="card-title">Medical Note Export</div>
+        <textarea id="note-output" readonly></textarea>
+        <button class="btn-action" style="width:100%; margin-top:10px; background:#263238" onclick="copyNote()">複製病歷文字</button>
+        <div class="localization-display">
+            <div style="font-weight:bold; margin-bottom:10px; border-bottom:1px solid #90caf9">Initial Localization Suggestions:</div>
+            <div id="loc-content">待輸入資料...</div>
+        </div>
+    </div>
+</div>
+</div>
 <div class="score-footer">
     <span>GCS: <span id="t-gcs">15</span></span>
     <span>NIHSS: <span id="t-nihss">0</span></span>
     <span>MMSE: <span id="t-mmse">30</span></span>
 </div>
-
 <div class="bottom-nav">
     <div class="nav-item active" onclick="nav('cn')"><span>CN/GCS</span></div>
     <div class="nav-item" onclick="nav('nihss')"><span>NIHSS</span></div>
@@ -106,7 +104,6 @@
     <div class="nav-item" onclick="nav('mmse')"><span>MMSE</span></div>
     <div class="nav-item" onclick="nav('note')"><span>NOTE</span></div>
 </div>
-
 <script>
 // --- 原有數據結構 ---
 const cnItems = [
@@ -220,3 +217,82 @@ window.onload = init;
 </script>
 </body>
 </html>
+Model 2:18 AM
+Thoughts
+Expand to view model thoughts
+
+chevron_right
+為了在不更動您原有程式碼結構與邏輯的前提下，強化其定位診斷（Localization）功能，我優化了您程式中的 updateLocalization() 函數。
+這個強化版會自動抓取您現有的 NIHSS 選項、EOM 下拉值、肌肉力量 (R/L) 以及 CN VII 的文字輸入，進行綜合加權計算。
+您可以直接將以下這段 <script> 中的 updateLocalization 函數替換掉您原本的舊函數即可：
+code
+JavaScript
+// --- 強化版定位分析邏輯 ---
+function updateLocalization() {
+    let logs = [];
+    let scores = { Cortex: 0, Brainstem: 0, Spinal: 0, PNS: 0 };
+    let reasons = [];
+
+    // 1. 抓取 NIHSS 皮質徵象 (ni_9: 語言, ni_11: 忽略)
+    const ni9 = parseInt(document.getElementById('ni_9').value);
+    const ni11 = parseInt(document.getElementById('ni_11').value);
+    if (ni9 > 0) { scores.Cortex += 10; reasons.push("Aphasia/Language deficit (皮質)"); }
+    if (ni11 > 0) { scores.Cortex += 10; reasons.push("Neglect/Inattention (皮質)"); }
+
+    // 2. 抓取 EOM 異常 (只要任何一個 EOM 不是 0，就懷疑腦幹)
+    let eomIssue = false;
+    document.querySelectorAll('.eom-select').forEach(s => {
+        if (parseInt(s.value) < 0) eomIssue = true;
+    });
+    if (eomIssue) { scores.Brainstem += 15; reasons.push("Extraocular Movement impairment (腦幹/CN)"); }
+
+    // 3. 抓取顏面神經 (c7_palsy)
+    const facialText = document.getElementById('c7_palsy').value.toLowerCase();
+    const isPeripheral = facialText.includes("peripheral");
+    const isCentral = facialText.includes("central");
+    if (isPeripheral) { scores.Brainstem += 8; reasons.push("Peripheral type facial palsy (腦幹/核下)"); }
+    if (isCentral) { scores.Cortex += 5; reasons.push("Central type facial palsy (皮質/內囊)"); }
+
+    // 4. 抓取肢體力量分佈 (v-mr, v-ml)
+    const mr = Array.from(document.querySelectorAll('.v-mr')).map(s => parseInt(s.value));
+    const ml = Array.from(document.querySelectorAll('.v-ml')).map(s => parseInt(s.value));
+    const isWeakR = mr.some(v => v < 5);
+    const isWeakL = ml.some(v => v < 5);
+
+    // 判定無力型態
+    if (isWeakR && !isWeakL) {
+        logs.push("<div class='loc-item' style='color:#d32f2f;'>[Pattern] Right Hemiparesis.</div>");
+        // 交叉性徵象檢查 (左臉偏癱+右肢無力 -> 腦幹)
+        if (facialText.includes("left") && isPeripheral) {
+            scores.Brainstem += 20; reasons.push("Crossed Hemiplegia (左臉右肢: 懷疑腦幹病灶)");
+        }
+    } else if (isWeakL && !isWeakR) {
+        logs.push("<div class='loc-item' style='color:#d32f2f;'>[Pattern] Left Hemiparesis.</div>");
+        // 交叉性徵象檢查 (右臉偏癱+左肢無力 -> 腦幹)
+        if (facialText.includes("right") && isPeripheral) {
+            scores.Brainstem += 20; reasons.push("Crossed Hemiplegia (右臉左肢: 懷疑腦幹病灶)");
+        }
+    } else if (isWeakR && isWeakL) {
+        // 四肢無力或雙下肢無力
+        const isLegsOnly = (mr[0]==5 && ml[0]==5 && mr[3]<5 && ml[3]<5);
+        if (isLegsOnly) { scores.Spinal += 15; reasons.push("Paraparesis (雙下肢癱瘓: 懷疑脊髓)"); }
+        else { reasons.push("Tetraparesis/Generalized weakness."); }
+    }
+
+    // 5. 總結與輸出
+    let sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+    let topLoc = sorted[0][1] > 0 ? sorted[0][0] : "Inconclusive";
+
+    let finalHtml = "";
+    if (topLoc !== "Inconclusive") {
+        finalHtml += `<div style='font-size:16px; color:#1565c0; font-weight:bold; margin-bottom:8px;'>Possible Localization: ${topLoc}</div>`;
+        reasons.forEach(r => finalHtml += `<div class='loc-item'>• ${r}</div>`);
+    } else {
+        finalHtml = "待輸入更多異常特徵...";
+    }
+    
+    // 加上原本的 Pattern 紀錄
+    logs.forEach(l => finalHtml += l);
+    
+    document.getElementById('loc-content').innerHTML = finalHtml;
+}
