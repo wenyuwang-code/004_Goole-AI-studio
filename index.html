@@ -226,7 +226,7 @@ const cnData = [
         { n: "Temporalis R/L", type: 'text', def: "full" }
     ]},
     { label: "CN VII", items: [
-        { n: "Facial palsy type", type: 'text', def: "No Central/Peripheral type facial palsy" },
+        { n: "Facial palsy type", type: 'select', opts: ["None", "Right Central type", "Left Central type", "Right Peripheral type", "Left Peripheral type"] },
         { n: "Nasolabial fold shallowing", type: 'select' }
     ]},
     { label: "CN VIII", items: [
@@ -293,7 +293,13 @@ function init() {
             const defVal = it.def || "";
             html += `<div class="sub-row"><span>${name}:</span>`;
             if (type === 'select') {
-                html += `<select class="cn-input" data-name="${name}" onchange="autoUpdate()"><option value="-">-</option><option value="+">+</option><option value="not performed">N/P</option></select>`;
+                // 如果有自定義 opts 則使用它，否則使用預設的 -/+/N/P
+                const options = it.opts ? it.opts : ["-", "+", "not performed"];
+                html += `<select class="cn-input" data-name="${name}" onchange="autoUpdate()">`;
+                options.forEach(opt => {
+                    html += `<option value="${opt}">${opt}</option>`;
+                });
+                html += `</select>`;
             } else {
                 html += `<input type="text" class="cn-input" data-name="${name}" value="${defVal}" oninput="autoUpdate()">`;
             }
