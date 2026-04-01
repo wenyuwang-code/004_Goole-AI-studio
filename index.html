@@ -1,16 +1,36 @@
-<!-- ⚠️ 只展示關鍵修改區塊（已幫你整合進原程式） -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Neuro Exam Tool</title>
+<style>
+body { font-family: Arial; padding: 20px; }
+.mp-row { display:flex; justify-content:space-between; margin:6px 0; }
+textarea { width:100%; height:220px; margin-top:20px; }
+</style>
+</head>
+
+<body>
+
+<h2>DTR & Reflexes (R/L)</h2>
+
+<div id="reflex-box"></div>
+
+<h3>Pathological Reflex</h3>
+<div id="patho-reflex-box"></div>
+
+<textarea id="export-area"></textarea>
+
 <script>
 
-// --- 初始化函數 ---
-function init() {
+// ===== init =====
+function init(){
 
-    ...
-
-    // ===== Reflex (已升級版本) =====
     const rBox = document.getElementById('reflex-box');
     const refOpts = ["mute", "-", "+", "++", "+++", "++++"]
         .map(v => `<option value="${v}" ${v=='++'?'selected':''}>${v}</option>`).join('');
 
+    // ===== DTR =====
     [
         "Biceps (C5/6)",
         "Triceps (C7)",
@@ -28,10 +48,12 @@ function init() {
         </div>`;
     });
 
+
     const pBox = document.getElementById('patho-reflex-box');
     const pathoOpts = ["-", "+"]
         .map(v => `<option value="${v}" ${v=='-'?'selected':''}>${v}</option>`).join('');
 
+    // ===== Pathological reflex =====
     [
         "Babinski",
         "Hoffman",
@@ -49,7 +71,7 @@ function init() {
         </div>`;
     });
 
-    // Grasping（單一）
+    // ===== Grasping（單一）=====
     pBox.innerHTML += `
     <div class="mp-row">
         <span>Grasping</span>
@@ -58,57 +80,57 @@ function init() {
         </div>
     </div>`;
 
-    ...
-
     autoUpdate();
 }
 
-// --- generateText ---
-function generateText() {
 
-    ...
+// ===== auto update =====
+function autoUpdate(){
+    generateText();
+}
+
+
+// ===== generate text =====
+function generateText(){
 
     const refR = document.querySelectorAll('.ref-r'),
           refL = document.querySelectorAll('.ref-l');
+
     const getRef = (i) => `${refR[i].value}/${refL[i].value}`;
 
     const pathoR = document.querySelectorAll('.patho-r'),
           pathoL = document.querySelectorAll('.patho-l');
+
     const getPatho = (i) => `${pathoR[i].value}/${pathoL[i].value}`;
 
     const grasping = document.querySelector('.patho-g')?.value || "-";
 
-    ...
 
-    const reflexText = `
+    const text = `
 DTR:
-Biceps ${getRef(0)}, 
-Triceps ${getRef(1)}, 
-Brachioradialis ${getRef(2)}, 
-Knee ${getRef(3)}, 
+Biceps ${getRef(0)}
+Triceps ${getRef(1)}
+Brachioradialis ${getRef(2)}
+Knee ${getRef(3)}
 Ankle ${getRef(4)}
 
 Pathological reflex:
-Babinski ${getPatho(0)}, 
-Hoffman ${getPatho(1)}, 
-Snouting ${getPatho(2)}, 
-Rooting ${getPatho(3)}, 
-Palmo-mental ${getPatho(4)}, 
+Babinski ${getPatho(0)}
+Hoffman ${getPatho(1)}
+Snouting ${getPatho(2)}
+Rooting ${getPatho(3)}
+Palmo-mental ${getPatho(4)}
 Grasping ${grasping}
 `;
 
-    ...
-
-    document.getElementById('export-area').value = `
-${gcsNoteLine}
-
-...
-
-${reflexText}
-
-...
-`;
-
+    document.getElementById('export-area').value = text;
 }
 
+
+// ===== start =====
+init();
+
 </script>
+
+</body>
+</html>
