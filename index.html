@@ -434,26 +434,60 @@ function generateText() {
     const nPart4 = nVals.slice(10,15).join('');
     const nihssLine = `NIHSS = ${nTotal} (${nPart1} ${nPart2} ${nPart3} ${nPart4})`;
 
+// --- 強化版定位分析引擎 ---
     let locHints = [];
-    if (parseInt(nVals[12]) > 0 || parseInt(nVals[14]) > 0) locHints.push("Cortical involvement (Aphasia/Neglect).");
+    const n = (idx) => parseInt(nVals[idx]); // 簡化工具
     
-    const isBabinskiPos = pathoR[0].value.includes('+') || pathoL[0].value.includes('+');
-    const tone = document.getElementById('v-motor-tone').value;
-    if (isBabinskiPos && tone.includes('spastic')) locHints.push("Upper Motor Neuron (UMN) lesion pattern.");
+    // 1. 皮質徵象 (Cortical Signs) - 高權重
+    let corticalCount = 0;
+    if (n(12) > 0) { locHints.push("皮質：失語症 (Aphasia)"); corticalCount++; }
+    if (n(14) > 0) { locHints.push("皮質：忽略症 (Neglect)"); corticalCount++; }
+    if (n(3) > 0) { locHints.push("皮質：凝視偏向 (Gaze preference)"); corticalCount++; }
+    if (n(4) > 0) { locHints.push("皮質：視野缺損 (Visual field defect)"); corticalCount++; }
 
+    // 2. 肢體無力型態 (Motor Pattern)
     const isWeakR = Array.from(mpR).some(el => el.value < 5);
     const isWeakL = Array.from(mpL).some(el => el.value < 5);
-    if (isWeakR || isWeakL) {
-        locHints.push(isWeakR ? "Right Hemiparesis." : "Left Hemiparesis.");
-        if (nVals[4] === nVals[5] && nVals[5] === nVals[7]) locHints.push("Lacunar syndrome suspected (Symmetric weakness).");
+    const pwrR = Array.from(mpR).map(el => parseInt(el.value));
+    const pwrL = Array.from(mpL).map(el => parseInt(el.value));
+
+    if (isWeakR && !isWeakL) locHints.push("定位：右側偏癱 (Right Hemiparesis)");
+    if (isWeakL && !isWeakR) locHints.push("定位：左側偏癱 (Left Hemiparesis)");
+
+    // 3. 腔隙性腦梗塞判別 (Lacunar vs Cortical)
+    if ((isWeakR || isWeakL) && corticalCount === 0 && n(10) === 0) {
+        locHints.push("疑似腔隙性症候群 (Pure motor/Lacunar syndrome)，因無皮質徵象");
     }
 
-    const hasRightCN = Array.from(document.querySelectorAll('.cn-input')).some(el => el.value === '+' && el.closest('.item-box').innerText.includes('R'));
-    const hasLeftCN = Array.from(document.querySelectorAll('.cn-input')).some(el => el.value === '+' && el.closest('.item-box').innerText.includes('L'));
-    if ((hasLeftCN && isWeakR) || (hasRightCN && isWeakL)) locHints.push("Suspect Brainstem lesion (Crossed hemiplegia).");
+    // 4. 小腦徵象 (Cerebellar Signs)
+    if (n(10) > 0) locHints.push("定位：小腦/路徑受損 (Ataxia 陽性)");
 
-    const sPin = document.getElementById('s-pin').value;
-    if (sPin.toLowerCase().includes('t')) locHints.push(`Suspect spinal cord lesion at ${sPin.toUpperCase()} level.`);
+    // 5. 腦幹與交叉性徵象 (Brainstem & Crossed Signs)
+    const facial = getCN("Facial palsy type").toLowerCase();
+    const eom = getCN("EOM").toLowerCase();
+    if (eom !== "full" || getCN("Binocular diplopia") === "+") locHints.push("腦幹：眼球運動異常/複視");
+    
+    // 偵測典型腦幹交叉：一邊臉歪，對側手腳軟
+    if (facial.includes("peripheral")) {
+        if ((facial.includes("left") && isWeakR) || (facial.includes("right") && isWeakL)) {
+            locHints.push("💡 強烈懷疑腦幹病灶 (典型交叉性癱瘓 Crossed Hemiplegia)");
+        }
+    }
+
+    // 6. 脊髓型態 (Spinal Cord)
+    const isPara = (pwrR[8] < 5 && pwrL[8] < 5 && pwrR[1] === 5 && pwrL[1] === 5); // 只有下肢無力
+    if (isPara) locHints.push("定位：疑似脊髓病灶 (雙下肢癱瘓 Paraparesis)");
+    if (document.getElementById('s-pin').value.toLowerCase().includes('level')) {
+        locHints.push("定位：脊髓 (存在感覺平面 Sensory Level)");
+    }
+
+    // 7. 錐體外體系 (Extrapyramidal / Parkinsonism)
+    const uTotal = Array.from(document.querySelectorAll('.u-val, .u-val-sub')).reduce((a,b)=>a+parseInt(b.value),0);
+    if (uTotal > 5) locHints.push("定位：基底核/錐體外體系 (UPDRS 評分異常)");
+
+    // 8. 渲染到畫面上
+    document.getElementById('loc-content').innerHTML = locHints.length > 0 ? 
+        locHints.map(h => `<div class="loc-item">• ${h}</div>`).join('') : "無明顯異常定位特徵。";
 
     document.getElementById('loc-content').innerHTML = locHints.length > 0 ? 
         locHints.map(h => `<div class="loc-item">• ${h}</div>`).join('') : "輸入資料以進行定位分析...";
