@@ -45,6 +45,11 @@
         #localization-display { margin-top: 15px; padding: 15px; background: #fff3e0; border-left: 5px solid #ff9800; font-family: sans-serif; }
         .loc-title { font-weight: bold; color: #e65100; margin-bottom: 5px; display: block; }
         .loc-item { font-size: 0.9rem; color: #444; margin: 3px 0; }
+
+        #debug-container { margin-top: 15px; padding: 15px; background: #fbe9e7; border-left: 5px solid #ff5722; border-radius: 4px; }
+        .debug-warning { color: #d84315; font-weight: bold; font-size: 0.9rem; margin: 8px 0; padding-left: 20px; position: relative; }
+        .debug-warning::before { content: "⚠️"; position: absolute; left: 0; }
+        .debug-pass { color: #2e7d32; font-size: 0.9rem; font-weight: bold; }
     </style>
 </head>
 <body onload="init()">
@@ -60,6 +65,7 @@
         <button onclick="show('mmse')" id="b-mmse">MMSE</button>
         <button onclick="show('history')" class="history-btn" id="b-history">HISTORY</button>
         <button onclick="show('export')" class="export-btn" id="b-export">GENERATE NOTE</button>
+        <button onclick="show('debug')" id="b-debug" style="background: #e74c3c; font-weight: bold;">DEBUG (偵錯)</button>
     </div>
 </div>
 
@@ -163,6 +169,11 @@
         </div>
     </div>
 
+    <div id="s-debug" class="sec hidden">
+        <div class="section-title">臨床邏輯偵錯 (Clinical Audit)</div>
+        <div id="debug-container">正在分析數據...</div>
+    </div>
+    
     <div id="s-export" class="sec hidden">
         <div class="section-title">生成的純文字病歷 (即時更新)</div>
         <textarea id="export-area" readonly></textarea>
@@ -345,6 +356,33 @@ function autoUpdate() {
     const mTotal = Array.from(document.querySelectorAll('.mmse-val')).reduce((a,b)=>a+parseInt(b.value),0);
     document.getElementById('mmse-total').innerText = `MMSE: ${mTotal}/30`;
     generateText();
+    runDebugCheck();
+}
+
+function runDebugCheck() {
+    const container = document.getElementById('debug-container');
+    let warnings = [];
+    const nVals = Array.from(document.querySelectorAll('.n-val')).map(el => parseInt(el.value));
+    const mpR = Array.from(document.querySelectorAll('.mp-r')).map(el => parseInt(el.value));
+    const mpL = Array.from(document.querySelectorAll('.mp-l')).map(el => parseInt(el.value));
+    const mmseTotal = Array.from(document.querySelectorAll('.mmse-val')).reduce((a,b)=>a+parseInt(b.value),0);
+    const getCNVal = (name) => {
+        const el = document.querySelector(`.cn-input[data-name="${name}"]`);
+        return el ? el.value : "";
+    };
+
+    // 邏輯比對規則
+    if (nVals[6] > 1 && mpL[1] === 5) warnings.push("矛盾：NIHSS 顯示左肢明顯無力，但 Muscle Power 紀錄為 5/5。");
+    if (nVals[7] > 1 && mpR[1] === 5) warnings.push("矛盾：NIHSS 顯示右肢明顯無力，但 Muscle Power 紀錄為 5/5。");
+    if (getCNVal("RAPD") !== "-/-" && getCNVal("light reflex R/L") === "+/+") warnings.push("矛盾：紀錄有 RAPD，但 Light Reflex 卻填寫 +/+。");
+    if (nVals[12] > 0 && mmseTotal === 30) warnings.push("警示：NIHSS 評估有失語症，但 MMSE 為滿分 30。");
+    if (getCNVal("EOM") !== "full" && getCNVal("Binocular diplopia") === "-") warnings.push("提醒：EOM 限制但紀錄無複視(Diplopia)，請確認是否為單眼抑止或檢查誤差。");
+
+    if (warnings.length > 0) {
+        container.innerHTML = warnings.map(w => `<div class="debug-warning">${w}</div>`).join('');
+    } else {
+        container.innerHTML = `<div class="debug-pass">✅ 目前未發現明顯的臨床數據矛盾。</div>`;
+    }
 }
 
 function generateText() {
