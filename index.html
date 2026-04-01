@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>小笨腦子記不住NE</title>
+    <title>小笨腦子記不住NE - 專業偵錯版</title>
     <style>
         body { font-family: 'Consolas', 'Monaco', monospace; background: #f4f7f6; color: #333; margin: 0; padding-bottom: 150px; }
         .header { background: #2c3e50; padding: 10px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
@@ -12,6 +12,8 @@
         .menu button.active { background: #3498db; font-weight: bold; }
         .menu button.export-btn { background: #27ae60; font-weight: bold; }
         .menu button.history-btn { background: #8e44ad; font-weight: bold; }
+        /* 偵錯按鈕樣式 */
+        .menu button.debug-btn { background: #e74c3c; font-weight: bold; }
 
         .container { padding: 15px; max-width: 800px; margin: auto; background: white; min-height: 100vh; }
         .section-title { background: #ecf0f1; padding: 10px; font-weight: bold; border-left: 6px solid #2c3e50; margin: 20px 0 10px; font-size: 1.1rem; color: #2c3e50; }
@@ -45,6 +47,12 @@
         #localization-display { margin-top: 15px; padding: 15px; background: #fff3e0; border-left: 5px solid #ff9800; font-family: sans-serif; }
         .loc-title { font-weight: bold; color: #e65100; margin-bottom: 5px; display: block; }
         .loc-item { font-size: 0.9rem; color: #444; margin: 3px 0; }
+
+        /* 偵錯區域樣式 */
+        #debug-container { margin-top: 15px; padding: 15px; background: #fbe9e7; border-left: 5px solid #ff5722; border-radius: 4px; }
+        .debug-warning { color: #d84315; font-weight: bold; font-size: 0.9rem; margin: 8px 0; padding-left: 20px; position: relative; }
+        .debug-warning::before { content: "⚠️"; position: absolute; left: 0; }
+        .debug-pass { color: #2e7d32; font-size: 0.9rem; font-weight: bold; }
     </style>
 </head>
 <body onload="init()">
@@ -60,10 +68,12 @@
         <button onclick="show('mmse')" id="b-mmse">MMSE</button>
         <button onclick="show('history')" class="history-btn" id="b-history">HISTORY</button>
         <button onclick="show('export')" class="export-btn" id="b-export">GENERATE NOTE</button>
+        <button onclick="show('debug')" class="debug-btn" id="b-debug">DEBUG (偵錯)</button>
     </div>
 </div>
 
 <div class="container">
+    <!-- 原有區塊保持不變 -->
     <div class="row" style="background: #fffbe6; padding: 10px; border: 1px solid #ffe58f; gap:10px; border-radius: 8px;">
         <input type="text" id="v-id" placeholder="輸入病歷號碼 (Chart No)..." oninput="autoUpdate()">
         <button onclick="saveToHistory()" class="btn-save">儲存至歷史清單</button>
@@ -163,6 +173,17 @@
         </div>
     </div>
 
+    <!-- 偵錯功能區 (新) -->
+    <div id="s-debug" class="sec hidden">
+        <div class="section-title">臨床邏輯偵錯 (Clinical Audit)</div>
+        <div id="debug-container">
+            <p>正在分析數據邏輯...</p>
+        </div>
+        <div style="margin-top:20px; font-size:0.8rem; color:#666;">
+            * 此功能用於比對 NE 檢查項目間是否有明顯的臨床矛盾（例如 UMN 與 LMN 徵象同時出現在同一病灶處）。
+        </div>
+    </div>
+
     <div id="s-export" class="sec hidden">
         <div class="section-title">生成的純文字病歷 (即時更新)</div>
         <textarea id="export-area" readonly></textarea>
@@ -186,7 +207,7 @@
 </div>
 
 <script>
-// --- CN項目數據 ---
+// --- 原有數據與邏輯 (完全保留) ---
 const cnData = [
     { label: "CN I: smell", items: ["not performed", "anosmia", "hyposmia", "hyperosmia", "olfactory agnosia"], type: 'select' },
     { label: "CN II: Visual acuity", items: ["Counts fingers", "hand motion", "light perception"], type: 'select' },
@@ -263,7 +284,7 @@ const updrsFull = [
     {n:"兩腳靈敏度", type:"rl", k:["R","L"], opts:["0 正常","1 有點遲緩,幅度稍微減小","2 中度遲緩,容易疲勞,有時中斷","3 重度遲緩,開始很吃力,或常中斷","4 幾乎無法動作"]},
     {n:"從椅子上起立", type:"single", opts:["0 正常","1 遲緩,或需要試好多次","2 可自己推把手站起來","3 容易向後跌回,但仍可自力站起","4 必須要人幫助才能站起"]},
     {n:"姿勢 (Posture)", type:"single", opts:["0 正常挺直","1 不是很挺,輕微駝背","2 中度駝背,明顯異常,有輕度側彎","3 中度駝背,中度側彎","4 嚴重前屈,姿勢極端不正確"]},
-    {n:"步態 (Gait)", type:"single", opts:["0 正常","1 步態遲緩、拖步、但不會急步或向前衝","2 走路困難,但不需要或只需一點幫助,有時碎步","3 走路極端困難,需要幫助","4 即使有幫助,仍不能走路"]},
+    {n:"步態 (Gait)", type:"single", opts:["0 正常","1 步態遲緩、拖步、但不會急步節向前衝","2 走路困難,但不需要或只需一點幫助,有時碎步","3 走路極端困難,需要幫助","4 即使有幫助,仍不能走路"]},
     {n:"姿勢平穩度 (Pull test)", type:"single", opts:["0 正常","1 後退,但不需要幫助,可自行平衡","2 沒有平衡反應,若無抓人會摔倒","3 非常不穩,有失去平衡傾向","4 需要幫助才能站穩"]},
     {n:"全身遲緩 (Bradykinesia)", type:"single", opts:["0 正常","1 稍微變慢,給人小心翼翼的感覺","2 輕度變慢或動作減少,確實不正常","3 中度變慢或動作減少,或幅度減小","4 重度變慢或動作減少"]}
 ];
@@ -271,8 +292,8 @@ const updrsFull = [
 const mmseQs = ["年份","季節","日期","禮拜","月份","省/市","縣/市","區/鄉鎮","醫院","樓層","複述:藍","複述:悲","複述:火","100-7","93-7","86-7","79-7","72-7","回憶:藍","回憶:悲","回憶:火","辨認:手錶","辨認:鉛筆","複誦句子","閉眼動作","拿紙","摺紙","放紙","寫句子","畫圖"];
 const mpItems = ["Neck flexion/extension", "Shoulder abduction (C5)", "Elbow flexion (C6)", "Elbow extension (C7)", "Wrist extension (C6)", "Finger flexion (C8)", "Grasping (C8/T1)", "Finger abduction (T1)", "Hip flexion (L2)", "Knee extension (L3)", "Ankle dorsiflexion (L4)", "Ankle plantarflexion (S1)", "Big toe extension (L5)"];
 
-// --- 初始化函數 ---
 function init() {
+    // 原始 init 內容
     const cnBox = document.getElementById('cn-container');
     cnData.forEach(group => {
         let html = `<div class="item-box"><span class="item-label">${group.label}</span>`;
@@ -324,7 +345,6 @@ function init() {
     });
 
     const pBox = document.getElementById('patho-reflex-box');
-    // --- 修正處：將選項改為只有 + 與 - ---
     const pathoOpts = ["-", "+"].map(v => `<option value="${v}" ${v=='-'?'selected':''}>${v}</option>`).join('');
     ["Babinski", "Hoffman"].forEach(it => {
         pBox.innerHTML += `<div class="mp-row"><span>${it}</span><div>R:<select class="patho-r" onchange="autoUpdate()">${pathoOpts}</select> L:<select class="patho-l" onchange="autoUpdate()">${pathoOpts}</select></div></div>`;
@@ -345,9 +365,74 @@ function autoUpdate() {
     const mTotal = Array.from(document.querySelectorAll('.mmse-val')).reduce((a,b)=>a+parseInt(b.value),0);
     document.getElementById('mmse-total').innerText = `MMSE: ${mTotal}/30`;
     generateText();
+    runDebugCheck(); // 每次更新時執行偵錯
+}
+
+// --- 偵錯邏輯函數 (新) ---
+function runDebugCheck() {
+    const debugContainer = document.getElementById('debug-container');
+    let warnings = [];
+
+    // 1. 獲取資料
+    const nVals = Array.from(document.querySelectorAll('.n-val')).map(el => parseInt(el.value));
+    const mpR = Array.from(document.querySelectorAll('.mp-r')).map(el => parseInt(el.value));
+    const mpL = Array.from(document.querySelectorAll('.mp-l')).map(el => parseInt(el.value));
+    const mmseTotal = Array.from(document.querySelectorAll('.mmse-val')).reduce((a,b)=>a+parseInt(b.value),0);
+    const pathoR = document.querySelectorAll('.patho-r')[0].value; // Babinski R
+    const pathoL = document.querySelectorAll('.patho-l')[0].value; // Babinski L
+    const tone = document.getElementById('v-motor-tone').value.toLowerCase();
+    const wasting = document.getElementById('v-motor-ins').value.toLowerCase();
+
+    const getCNVal = (name) => {
+        const el = document.querySelector(`.cn-input[data-name="${name}"]`);
+        return el ? el.value : "";
+    };
+
+    // 2. 邏輯比對規則
+    
+    // Rule A: NIHSS 無力與 Muscle Power 矛盾 (以 Shoulder 為例)
+    if (nVals[6] > 1 && mpL[1] === 5) warnings.push("NIHSS 顯示左上肢明顯無力 (Item 5a)，但 Muscle Power 卻紀錄為 5/5。");
+    if (nVals[7] > 1 && mpR[1] === 5) warnings.push("NIHSS 顯示右上肢明顯無力 (Item 5b)，但 Muscle Power 卻紀錄為 5/5。");
+
+    // Rule B: UMN vs LMN 矛盾
+    if ((pathoR === "+" || pathoL === "+") && (tone.includes("flaccid") || wasting.includes("wasting"))) {
+        warnings.push("臨床矛盾：同時出現 Babinski (+) (UMN 徵象) 以及肌肉萎縮/張力低下 (LMN 徵象)。");
+    }
+
+    // Rule C: 皮質定位與智能評估矛盾
+    if ((nVals[12] > 0 || nVals[14] > 0) && mmseTotal === 30) {
+        warnings.push("NIHSS 提示皮質受損 (失語/忽略)，但 MMSE 評分為滿分 (30/30)，請確認認知功能評估。");
+    }
+
+    // Rule D: 腦幹定位邏輯 (如果定位顯示腦幹但 CN 正常)
+    const isWeakR = mpR.some(v => v < 5);
+    const isWeakL = mpL.some(v => v < 5);
+    const facialPalsy = getCNVal("Facial palsy type").toLowerCase();
+    if ((facialPalsy.includes("peripheral") && isWeakR) || (facialPalsy.includes("peripheral") && isWeakL)) {
+        // 定位導向腦幹，檢查瞳孔或 EOM
+        if (getCNVal("EOM") === "full" && getCNVal("isocoric R/L").includes("3mm/3mm")) {
+            // 這不一定是錯誤，但值得提醒
+            warnings.push("疑似腦幹交叉性症狀，但 EOM 與瞳孔檢查均顯示正常，建議複查腦神經。");
+        }
+    }
+
+    // Rule E: 瞳孔反射邏輯
+    const lr = getCNVal("light reflex R/L");
+    const rapd = getCNVal("RAPD");
+    if (rapd !== "-/-" && lr === "+/+") {
+        warnings.push("紀錄有 RAPD (+)，但光反射紀錄卻是雙側正常 (+/+)，請確認傳入神經受損狀況。");
+    }
+
+    // 3. 渲染結果
+    if (warnings.length > 0) {
+        debugContainer.innerHTML = warnings.map(w => `<div class="debug-warning">${w}</div>`).join('');
+    } else {
+        debugContainer.innerHTML = `<div class="debug-pass">✅ 目前未發現明顯的臨床邏輯矛盾。</div>`;
+    }
 }
 
 function generateText() {
+    // 保持原有 generateText 代碼
     const id = document.getElementById('v-id').value;
     const getCN = (name) => {
         const el = document.querySelector(`.cn-input[data-name="${name}"]`);
