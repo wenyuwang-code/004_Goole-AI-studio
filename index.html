@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>小笨腦子記不住NE - 專業偵錯版</title>
+    <title>小笨腦子記不住NE</title>
     <style>
         body { font-family: 'Consolas', 'Monaco', monospace; background: #f4f7f6; color: #333; margin: 0; padding-bottom: 150px; }
         .header { background: #2c3e50; padding: 10px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
@@ -12,7 +12,6 @@
         .menu button.active { background: #3498db; font-weight: bold; }
         .menu button.export-btn { background: #27ae60; font-weight: bold; }
         .menu button.history-btn { background: #8e44ad; font-weight: bold; }
-        /* 偵錯按鈕樣式 */
         .menu button.debug-btn { background: #e74c3c; font-weight: bold; }
 
         .container { padding: 15px; max-width: 800px; margin: auto; background: white; min-height: 100vh; }
@@ -48,7 +47,6 @@
         .loc-title { font-weight: bold; color: #e65100; margin-bottom: 5px; display: block; }
         .loc-item { font-size: 0.9rem; color: #444; margin: 3px 0; }
 
-        /* 偵錯區域樣式 */
         #debug-container { margin-top: 15px; padding: 15px; background: #fbe9e7; border-left: 5px solid #ff5722; border-radius: 4px; }
         .debug-warning { color: #d84315; font-weight: bold; font-size: 0.9rem; margin: 8px 0; padding-left: 20px; position: relative; }
         .debug-warning::before { content: "⚠️"; position: absolute; left: 0; }
@@ -68,12 +66,11 @@
         <button onclick="show('mmse')" id="b-mmse">MMSE</button>
         <button onclick="show('history')" class="history-btn" id="b-history">HISTORY</button>
         <button onclick="show('export')" class="export-btn" id="b-export">GENERATE NOTE</button>
-        <button onclick="show('debug')" class="debug-btn" id="b-debug">DEBUG (偵錯)</button>
+        <button onclick="show('debug')" class="debug-btn" id="b-debug">DEBUG</button>
     </div>
 </div>
 
 <div class="container">
-    <!-- 原有區塊保持不變 -->
     <div class="row" style="background: #fffbe6; padding: 10px; border: 1px solid #ffe58f; gap:10px; border-radius: 8px;">
         <input type="text" id="v-id" placeholder="輸入病歷號碼 (Chart No)..." oninput="autoUpdate()">
         <button onclick="saveToHistory()" class="btn-save">儲存至歷史清單</button>
@@ -141,7 +138,7 @@
     <div id="s-reflex" class="sec hidden">
         <div class="section-title">Deep Tendon Reflexes</div>
         <div id="reflex-box"></div>
-        <div class="sub-title">Pathological Reflexes</div>
+        <div class="sub-title">Pathological & Primitive Reflexes</div>
         <div id="patho-reflex-box"></div>
     </div>
 
@@ -167,35 +164,25 @@
     </div>
 
     <div id="s-history" class="sec hidden">
-        <div class="section-title">歷史暫存清單 (點擊查看)</div>
-        <div id="history-list">
-            <p style="color:#999; text-align:center;">尚無歷史紀錄</p>
-        </div>
+        <div class="section-title">歷史暫存清單</div>
+        <div id="history-list"></div>
     </div>
 
-    <!-- 偵錯功能區 (新) -->
     <div id="s-debug" class="sec hidden">
         <div class="section-title">臨床邏輯偵錯 (Clinical Audit)</div>
-        <div id="debug-container">
-            <p>正在分析數據邏輯...</p>
-        </div>
-        <div style="margin-top:20px; font-size:0.8rem; color:#666;">
-            * 此功能用於比對 NE 檢查項目間是否有明顯的臨床矛盾（例如 UMN 與 LMN 徵象同時出現在同一病灶處）。
-        </div>
+        <div id="debug-container"></div>
     </div>
 
     <div id="s-export" class="sec hidden">
-        <div class="section-title">生成的純文字病歷 (即時更新)</div>
+        <div class="section-title">生成的純文字病歷</div>
         <textarea id="export-area" readonly></textarea>
-        
         <div id="localization-display">
-            <span class="loc-title">📍 Initial Localization Guide (Clinical Reference)</span>
-            <div id="loc-content">輸入資料以進行定位分析...</div>
+            <span class="loc-title">📍 Initial Localization Guide</span>
+            <div id="loc-content"></div>
         </div>
-
         <div style="display:flex; gap:10px; margin-top:10px;">
             <button onclick="copyToClipboard()" style="flex:1; padding:15px; background:#3498db; color:white; border:none; cursor:pointer; font-weight:bold;">複製文字</button>
-            <button onclick="downloadTxt()" style="flex:1; padding:15px; background:#27ae60; color:white; border:none; cursor:pointer; font-weight:bold;">下載 .txt 檔案</button>
+            <button onclick="downloadTxt()" style="flex:1; padding:15px; background:#27ae60; color:white; border:none; cursor:pointer; font-weight:bold;">下載 .txt</button>
         </div>
     </div>
 </div>
@@ -207,93 +194,60 @@
 </div>
 
 <script>
-// --- 原有數據與邏輯 (完全保留) ---
 const cnData = [
     { label: "CN I: smell", items: ["not performed", "anosmia", "hyposmia", "hyperosmia", "olfactory agnosia"], type: 'select' },
     { label: "CN II: Visual acuity", items: ["Counts fingers", "hand motion", "light perception"], type: 'select' },
-    { label: "CN II: Visual fields", items: [
-        { n: "confrontation test", type: 'text', def: "intact" },
-        { n: "hemianopia", type: 'select' },
-        { n: "quadrantanopia", type: 'select' }
-    ]},
-    { label: "CN III, IV, VI: Pupil", items: [
-        { n: "isocoric R/L", type: 'text', def: "3mm/3mm" },
-        { n: "light reflex R/L", type: 'text', def: "+/+" },
-        { n: "RAPD", type: 'text', def: "-/-" }
-    ]},
-    { label: "CN III, IV, VI: Others", items: [
-        { n: "EOM", type: 'text', def: "full" },
-        { n: "Primary gaze", type: 'text', def: "at neutral positions without diplopia" },
-        { n: "Convergence", type: 'text', def: "fair" },
-        { n: "Binocular diplopia", type: 'select' },
-        { n: "Pursuit", type: 'text', def: "smooth" },
-        { n: "Saccade", type: 'text', def: "no dysmetria" }
-    ]},
-    { label: "CN V", items: [
-        { n: "Corneal reflex", type: 'text', def: "+/+" },
-        { n: "Facial sensation", type: 'text', def: "intact and symmetric to pinprick and light touch" },
-        { n: "Masseter R/L", type: 'text', def: "full" },
-        { n: "Temporalis R/L", type: 'text', def: "full" }
-    ]},
-    { label: "CN VII", items: [
-        { n: "Facial palsy type", type: 'text', def: "No Central/Peripheral type facial palsy" },
-        { n: "Nasolabial fold shallowing", type: 'select' }
-    ]},
-    { label: "CN VIII", items: [
-        { n: "Hearing ability", type: 'text', def: "fair by finger rubbing test" },
-        { n: "Weber test", type: 'text', def: "no lateralization" },
-        { n: "Rinne test", type: 'text', def: "bilatareal AC>BC" }
-    ]},
-    { label: "CN IX, X", items: [
-        { n: "Uvula deviation", type: 'select' },
-        { n: "Gag reflex", type: 'text', def: "+" },
-        { n: "dysarthria", type: 'select' }
-    ]},
+    { label: "CN II: Visual fields", items: [{ n: "confrontation test", type: 'text', def: "intact" }, { n: "hemianopia", type: 'select' }, { n: "quadrantanopia", type: 'select' }]},
+    { label: "CN III, IV, VI: Pupil", items: [{ n: "isocoric R/L", type: 'text', def: "3mm/3mm" }, { n: "light reflex R/L", type: 'text', def: "+/+" }, { n: "RAPD", type: 'text', def: "-/-" }]},
+    { label: "CN III, IV, VI: Others", items: [{ n: "EOM", type: 'text', def: "full" }, { n: "Primary gaze", type: 'text', def: "at neutral positions without diplopia" }, { n: "Convergence", type: 'text', def: "fair" }, { n: "Binocular diplopia", type: 'select' }, { n: "Pursuit", type: 'text', def: "smooth" }, { n: "Saccade", type: 'text', def: "no dysmetria" }]},
+    { label: "CN V", items: [{ n: "Corneal reflex", type: 'text', def: "+/+" }, { n: "Facial sensation", type: 'text', def: "intact and symmetric to pinprick and light touch" }, { n: "Masseter R/L", type: 'text', def: "full" }, { n: "Temporalis R/L", type: 'text', def: "full" }]},
+    { label: "CN VII", items: [{ n: "Facial palsy type", type: 'text', def: "No Central/Peripheral type facial palsy" }, { n: "Nasolabial fold shallowing", type: 'select' }]},
+    { label: "CN VIII", items: [{ n: "Hearing ability", type: 'text', def: "fair by finger rubbing test" }, { n: "Weber test", type: 'text', def: "no lateralization" }, { n: "Rinne test", type: 'text', def: "bilatareal AC>BC" }]},
+    { label: "CN IX, X", items: [{ n: "Uvula deviation", type: 'select' }, { n: "Gag reflex", type: 'text', def: "+" }, { n: "dysarthria", type: 'select' }]},
     { label: "CN XI (SCM)", items: ["weakness", "atrophy"], type: 'select' },
     { label: "CN XI (Trapezius)", items: ["weakness", "atrophy"], type: 'select' },
     { label: "CN XII", items: ["deviation", "atrophy", "fasciculation"], type: 'select' }
 ];
 
 const nihssFull = [
-    {n:"1a. 意識程度 (Level of Consciousness)", opts:["0 清醒","1 嗜睡","2 呆滯","3 昏迷"]},
+    {n:"1a. 意識程度", opts:["0 清醒","1 嗜睡","2 呆滯","3 昏迷"]},
     {n:"1b. 意識程度 (詢問月、年齡)", opts:["0 兩項正確","1 一項正確","2 兩項錯誤"]},
-    {n:"1c. 意識程度 (執行命令-睜、閉眼; 握拳、放開)", opts:["0 兩項正確","1 一項正確","2 兩項錯誤"]},
-    {n:"2. 眼球運動 (令病人看左右)", opts:["0 左右眼活動正確","1 一或兩眼球部份限制","2 兩眼球偏向一側"]},
-    {n:"3. 視野 (左、右、上及下四個視野處檢測)", opts:["0 四個視野看到","1 一側部份偏盲","2 一側偏盲","3 全盲"]},
-    {n:"4. 面部肌肉 (露齒及閉眼)", opts:["0 正常","1 一側嘴角稍歪斜","2 一側嘴角不動","3 週邊型顏面麻痺"]},
-    {n:"5a. 左上肢運動功能 (手平舉 90度/躺45度, 計數10秒)", opts:["0 正常","1 微掉","2 慢慢掉落","3 只能水平活動","4 無法活動"]},
-    {n:"5b. 右上肢運動功能 (手平舉 90度/躺45度, 計數10秒)", opts:["0 正常","1 微掉","2 慢慢掉落","3 只能水平活動","4 無法活動"]},
-    {n:"6a. 左下肢運動功能 (腿抬起30度, 計數5秒)", opts:["0 正常","1 微掉","2 慢慢掉落","3 只能水平活動","4 無法活動"]},
-    {n:"6b. 右下肢運動功能 (腿抬起30度, 計數5秒)", opts:["0 正常","1 微掉","2 慢慢掉落","3 只能水平活動","4 無法活動"]},
-    {n:"7. 肢體運動失調", opts:["0 無失衡或無法配合","1 一肢體失衡","2 兩肢體以上失衡"]},
-    {n:"8. 感覺功能 (臉、胸、手、腳兩側對比檢測)", opts:["0 正常","1 部份感覺喪失","2 全部感覺喪失(昏迷)"]},
-    {n:"9. 語言功能 (看圖說故事、表達、命名、複述、瞭解)", opts:["0 表達詳細清楚","1 任一項缺損","2 嚴重缺損","3 完全失語"]},
-    {n:"10. 構音困難 (說話口齒清晰)", opts:["0 清晰","1 部份瞭解","2 無法瞭解"]},
-    {n:"11. 忽略 (視、觸、聽、空間、注意力反應消失)", opts:["0 兩側感受到刺激","1 忽略一項","2 忽略兩項以上"]}
+    {n:"1c. 意識程度 (執行命令)", opts:["0 兩項正確","1 一項正確","2 兩項錯誤"]},
+    {n:"2. 眼球運動", opts:["0 正常","1 部分限制","2 偏向一側"]},
+    {n:"3. 視野", opts:["0 看到","1 部分偏盲","2 偏盲","3 全盲"]},
+    {n:"4. 面部肌肉", opts:["0 正常","1 稍歪斜","2 一側不動","3 週邊型癱瘓"]},
+    {n:"5a. 左上肢運動", opts:["0 正常","1 微掉","2 慢慢掉","3 只能水平","4 無法活動"]},
+    {n:"5b. 右上肢運動", opts:["0 正常","1 微掉","2 慢慢掉","3 只能水平","4 無法活動"]},
+    {n:"6a. 左下肢運動", opts:["0 正常","1 微掉","2 慢慢掉","3 只能水平","4 無法活動"]},
+    {n:"6b. 右下肢運動", opts:["0 正常","1 微掉","2 慢慢掉","3 只能水平","4 無法活動"]},
+    {n:"7. 肢體運動失調", opts:["0 無","1 一肢體","2 兩肢體以上"]},
+    {n:"8. 感覺功能", opts:["0 正常","1 部分喪失","2 全部喪失"]},
+    {n:"9. 語言功能", opts:["0 清楚","1 一項缺損","2 嚴重缺損","3 完全失語"]},
+    {n:"10. 構音困難", opts:["0 清晰","1 部分瞭解","2 無法瞭解"]},
+    {n:"11. 忽略", opts:["0 無","1 忽略一項","2 忽略兩項以上"]}
 ];
 
 const updrsFull = [
-    {n:"語言 (Speech)", type:"single", opts:["0 正常","1 表情、用字、音量有一點減弱","2 中度障礙，發音含糊單調，但是可以了解","3 重度障礙，很難了解","4 完全不了解"]},
-    {n:"面部表情 (Masked Face)", type:"single", opts:["0 正常","1 輕微面無表情,可以是正常人的'撲克臉'","2 面部表情輕微地減少,並確定是不正常減少","3 中度面無表情,嘴巴有時微張","4 臉部僵硬、固定、表情全無、嘴吧張開超過半公分"]},
-    {n:"靜止型顫抖", type:"4limb", k:["RU","LU","RL","LL"], opts:["0 沒有","1 輕微顫抖,很少出現","2 持續性的輕微顫抖或間續性的中度顫抖","3 中度顫抖,常常出現","4 抖動幅度很大,並且經常出現"]},
-    {n:"動作姿勢型顫抖", type:"rl", k:["R","L"], opts:["0 沒有","1 輕微,只有動作時才發生","2 中度,只有動作時才發生","3 中度,在動作及維持姿勢時皆發生","4 重度,會干擾進食"]},
-    {n:"僵硬 (Rigidity)", type:"rigidity", k:["Neck","RU","LU","RL","LL"], opts:["0 沒有","1 極輕微,或只有在其他肢體做動作時才可測到","2 輕微至中度","3 明顯,但是範圍內動作可完成","4 嚴重,範圍內動作完成困難"]},
-    {n:"手指打拍", type:"rl", k:["R","L"], opts:["0 正常 (每5秒>=15下)","1 有時遲緩,幅度減少 (每5秒11-14下)","2 中度障礙,容易疲勞,有時動作會中斷 (每5秒7-10下)","3 重度障礙,啟動很慢,或動作時常中斷 (每5秒3-6下)","4 幾乎無法動作 (每5秒0-2下)"]},
-    {n:"手掌握合", type:"rl", k:["R","L"], opts:["0 正常","1 有點緩慢,或張開幅度稍微減小","2 中度障礙,容易疲勞,有時中斷","3 重度障礙,開始很吃力,或常中斷","4 幾乎無法動作"]},
-    {n:"前臂迴旋 (RAM)", type:"rl", k:["R","L"], opts:["0 正常","1 有點遲緩,幅度稍微減小","2 中度遲緩,容易疲勞,有時中斷","3 重度遲緩,開始很吃力,或常中斷","4 幾乎無法動作"]},
-    {n:"兩腳靈敏度", type:"rl", k:["R","L"], opts:["0 正常","1 有點遲緩,幅度稍微減小","2 中度遲緩,容易疲勞,有時中斷","3 重度遲緩,開始很吃力,或常中斷","4 幾乎無法動作"]},
-    {n:"從椅子上起立", type:"single", opts:["0 正常","1 遲緩,或需要試好多次","2 可自己推把手站起來","3 容易向後跌回,但仍可自力站起","4 必須要人幫助才能站起"]},
-    {n:"姿勢 (Posture)", type:"single", opts:["0 正常挺直","1 不是很挺,輕微駝背","2 中度駝背,明顯異常,有輕度側彎","3 中度駝背,中度側彎","4 嚴重前屈,姿勢極端不正確"]},
-    {n:"步態 (Gait)", type:"single", opts:["0 正常","1 步態遲緩、拖步、但不會急步節向前衝","2 走路困難,但不需要或只需一點幫助,有時碎步","3 走路極端困難,需要幫助","4 即使有幫助,仍不能走路"]},
-    {n:"姿勢平穩度 (Pull test)", type:"single", opts:["0 正常","1 後退,但不需要幫助,可自行平衡","2 沒有平衡反應,若無抓人會摔倒","3 非常不穩,有失去平衡傾向","4 需要幫助才能站穩"]},
-    {n:"全身遲緩 (Bradykinesia)", type:"single", opts:["0 正常","1 稍微變慢,給人小心翼翼的感覺","2 輕度變慢或動作減少,確實不正常","3 中度變慢或動作減少,或幅度減小","4 重度變慢或動作減少"]}
+    {n:"語言 (Speech)", type:"single", opts:["0 正常","1 輕微減弱","2 中度障礙","3 重度障礙","4 不了解"]},
+    {n:"面部表情", type:"single", opts:["0 正常","1 輕微","2 明顯減少","3 中度","4 全無"]},
+    {n:"靜止型顫抖", type:"4limb", k:["RU","LU","RL","LL"], opts:["0 沒有","1 輕微","2 間歇中度","3 中度常現","4 幅度大"]},
+    {n:"動作姿勢型顫抖", type:"rl", k:["R","L"], opts:["0 沒有","1 輕微","2 中度","3 姿勢性","4 重度"]},
+    {n:"僵硬 (Rigidity)", type:"rigidity", k:["Neck","RU","LU","RL","LL"], opts:["0 沒有","1 極輕微","2 輕微","3 明顯","4 嚴重"]},
+    {n:"手指打拍", type:"rl", k:["R","L"], opts:["0 正常","1 有時遲緩","2 中度障礙","3 重度障礙","4 無法"]},
+    {n:"手掌握合", type:"rl", k:["R","L"], opts:["0 正常","1 有點緩慢","2 中度","3 重度","4 無法"]},
+    {n:"前臂迴旋", type:"rl", k:["R","L"], opts:["0 正常","1 有點遲緩","2 中度","3 重度","4 無法"]},
+    {n:"兩腳靈敏度", type:"rl", k:["R","L"], opts:["0 正常","1 有點遲緩","2 中度","3 重度","4 無法"]},
+    {n:"起立", type:"single", opts:["0 正常","1 遲緩","2 需推把手","3 易後跌","4 需人幫"]},
+    {n:"姿勢", type:"single", opts:["0 正常挺直","1 輕微駝背","2 明顯異常","3 中度駝背","4 嚴重前屈"]},
+    {n:"步態 (Gait)", type:"single", opts:["0 正常","1 拖步","2 走路困難","3 極端困難","4 不能走"]},
+    {n:"姿勢平穩度", type:"single", opts:["0 正常","1 後退","2 無反應","3 不穩","4 需幫"]},
+    {n:"全身遲緩", type:"single", opts:["0 正常","1 稍微","2 輕度","3 中度","4 重度"]}
 ];
 
 const mmseQs = ["年份","季節","日期","禮拜","月份","省/市","縣/市","區/鄉鎮","醫院","樓層","複述:藍","複述:悲","複述:火","100-7","93-7","86-7","79-7","72-7","回憶:藍","回憶:悲","回憶:火","辨認:手錶","辨認:鉛筆","複誦句子","閉眼動作","拿紙","摺紙","放紙","寫句子","畫圖"];
 const mpItems = ["Neck flexion/extension", "Shoulder abduction (C5)", "Elbow flexion (C6)", "Elbow extension (C7)", "Wrist extension (C6)", "Finger flexion (C8)", "Grasping (C8/T1)", "Finger abduction (T1)", "Hip flexion (L2)", "Knee extension (L3)", "Ankle dorsiflexion (L4)", "Ankle plantarflexion (S1)", "Big toe extension (L5)"];
 
 function init() {
-    // 原始 init 內容
     const cnBox = document.getElementById('cn-container');
     cnData.forEach(group => {
         let html = `<div class="item-box"><span class="item-label">${group.label}</span>`;
@@ -338,15 +292,16 @@ function init() {
     const vOpts = []; for(let i=80; i>=0; i-=5) vOpts.push((i/10).toFixed(1));
     ["Big toe", "Finger"].forEach(it => jvBox.innerHTML += `<div class="mp-row"><span>${it} Vibration</span><div>R:<select class="v-r" onchange="autoUpdate()">${vOpts.map(v=>`<option ${v=='8.0'?'selected':''}>${v}</option>`).join('')}</select> L:<select class="v-l" onchange="autoUpdate()">${vOpts.map(v=>`<option ${v=='8.0'?'selected':''}>${v}</option>`).join('')}</select></div></div>`);
 
+    // --- 修改 Reflex 部分 ---
     const rBox = document.getElementById('reflex-box');
     const refOpts = ["mute", "-", "+", "++", "+++", "++++"].map(v => `<option value="${v}" ${v=='++'?'selected':''}>${v}</option>`).join('');
-    ["Biceps", "Triceps", "Knee", "Ankle"].forEach(it => {
+    ["Biceps(C5/6)", "Triceps(C7)", "Brachioradialis(C5/6)", "Knee(L4)", "Ankle(S1)"].forEach(it => {
         rBox.innerHTML += `<div class="mp-row"><span>${it}</span><div>R:<select class="ref-r" onchange="autoUpdate()">${refOpts}</select> L:<select class="ref-l" onchange="autoUpdate()">${refOpts}</select></div></div>`;
     });
 
     const pBox = document.getElementById('patho-reflex-box');
     const pathoOpts = ["-", "+"].map(v => `<option value="${v}" ${v=='-'?'selected':''}>${v}</option>`).join('');
-    ["Babinski", "Hoffman"].forEach(it => {
+    ["Babinski", "Hoffman", "Snouting", "Rooting", "Palmo-mental", "Grasping"].forEach(it => {
         pBox.innerHTML += `<div class="mp-row"><span>${it}</span><div>R:<select class="patho-r" onchange="autoUpdate()">${pathoOpts}</select> L:<select class="patho-l" onchange="autoUpdate()">${pathoOpts}</select></div></div>`;
     });
 
@@ -365,74 +320,31 @@ function autoUpdate() {
     const mTotal = Array.from(document.querySelectorAll('.mmse-val')).reduce((a,b)=>a+parseInt(b.value),0);
     document.getElementById('mmse-total').innerText = `MMSE: ${mTotal}/30`;
     generateText();
-    runDebugCheck(); // 每次更新時執行偵錯
+    runDebugCheck();
 }
 
-// --- 偵錯邏輯函數 (新) ---
 function runDebugCheck() {
     const debugContainer = document.getElementById('debug-container');
     let warnings = [];
-
-    // 1. 獲取資料
     const nVals = Array.from(document.querySelectorAll('.n-val')).map(el => parseInt(el.value));
     const mpR = Array.from(document.querySelectorAll('.mp-r')).map(el => parseInt(el.value));
     const mpL = Array.from(document.querySelectorAll('.mp-l')).map(el => parseInt(el.value));
-    const mmseTotal = Array.from(document.querySelectorAll('.mmse-val')).reduce((a,b)=>a+parseInt(b.value),0);
-    const pathoR = document.querySelectorAll('.patho-r')[0].value; // Babinski R
-    const pathoL = document.querySelectorAll('.patho-l')[0].value; // Babinski L
+    const pathoR = document.querySelectorAll('.patho-r')[0].value;
     const tone = document.getElementById('v-motor-tone').value.toLowerCase();
     const wasting = document.getElementById('v-motor-ins').value.toLowerCase();
 
-    const getCNVal = (name) => {
-        const el = document.querySelector(`.cn-input[data-name="${name}"]`);
-        return el ? el.value : "";
-    };
+    if (nVals[6] > 1 && mpL[1] === 5) warnings.push("NIHSS 顯示左上肢無力，但 Muscle Power 紀錄為 5/5。");
+    if (nVals[7] > 1 && mpR[1] === 5) warnings.push("NIHSS 顯示右上肢無力，但 Muscle Power 紀錄為 5/5。");
+    if ((pathoR === "+") && (tone.includes("flaccid") || wasting.includes("wasting"))) warnings.push("矛盾：Babinski(+) 與肌肉萎縮同時出現。");
 
-    // 2. 邏輯比對規則
-    
-    // Rule A: NIHSS 無力與 Muscle Power 矛盾 (以 Shoulder 為例)
-    if (nVals[6] > 1 && mpL[1] === 5) warnings.push("NIHSS 顯示左上肢明顯無力 (Item 5a)，但 Muscle Power 卻紀錄為 5/5。");
-    if (nVals[7] > 1 && mpR[1] === 5) warnings.push("NIHSS 顯示右上肢明顯無力 (Item 5b)，但 Muscle Power 卻紀錄為 5/5。");
-
-    // Rule B: UMN vs LMN 矛盾
-    if ((pathoR === "+" || pathoL === "+") && (tone.includes("flaccid") || wasting.includes("wasting"))) {
-        warnings.push("臨床矛盾：同時出現 Babinski (+) (UMN 徵象) 以及肌肉萎縮/張力低下 (LMN 徵象)。");
-    }
-
-    // Rule C: 皮質定位與智能評估矛盾
-    if ((nVals[12] > 0 || nVals[14] > 0) && mmseTotal === 30) {
-        warnings.push("NIHSS 提示皮質受損 (失語/忽略)，但 MMSE 評分為滿分 (30/30)，請確認認知功能評估。");
-    }
-
-    // Rule D: 腦幹定位邏輯 (如果定位顯示腦幹但 CN 正常)
-    const isWeakR = mpR.some(v => v < 5);
-    const isWeakL = mpL.some(v => v < 5);
-    const facialPalsy = getCNVal("Facial palsy type").toLowerCase();
-    if ((facialPalsy.includes("peripheral") && isWeakR) || (facialPalsy.includes("peripheral") && isWeakL)) {
-        // 定位導向腦幹，檢查瞳孔或 EOM
-        if (getCNVal("EOM") === "full" && getCNVal("isocoric R/L").includes("3mm/3mm")) {
-            // 這不一定是錯誤，但值得提醒
-            warnings.push("疑似腦幹交叉性症狀，但 EOM 與瞳孔檢查均顯示正常，建議複查腦神經。");
-        }
-    }
-
-    // Rule E: 瞳孔反射邏輯
-    const lr = getCNVal("light reflex R/L");
-    const rapd = getCNVal("RAPD");
-    if (rapd !== "-/-" && lr === "+/+") {
-        warnings.push("紀錄有 RAPD (+)，但光反射紀錄卻是雙側正常 (+/+)，請確認傳入神經受損狀況。");
-    }
-
-    // 3. 渲染結果
     if (warnings.length > 0) {
         debugContainer.innerHTML = warnings.map(w => `<div class="debug-warning">${w}</div>`).join('');
     } else {
-        debugContainer.innerHTML = `<div class="debug-pass">✅ 目前未發現明顯的臨床邏輯矛盾。</div>`;
+        debugContainer.innerHTML = `<div class="debug-pass">✅ 目前未發現明顯臨床邏輯矛盾。</div>`;
     }
 }
 
 function generateText() {
-    // 保持原有 generateText 代碼
     const id = document.getElementById('v-id').value;
     const getCN = (name) => {
         const el = document.querySelector(`.cn-input[data-name="${name}"]`);
@@ -483,93 +395,28 @@ function generateText() {
 
     let locHints = [];
     if (parseInt(nVals[12]) > 0 || parseInt(nVals[14]) > 0) locHints.push("Cortical involvement (Aphasia/Neglect).");
-    
-    const isBabinskiPos = pathoR[0].value.includes('+') || pathoL[0].value.includes('+');
-    const tone = document.getElementById('v-motor-tone').value;
-    if (isBabinskiPos && tone.includes('spastic')) locHints.push("Upper Motor Neuron (UMN) lesion pattern.");
-
-    const isWeakR = Array.from(mpR).some(el => el.value < 5);
-    const isWeakL = Array.from(mpL).some(el => el.value < 5);
-    if (isWeakR || isWeakL) {
-        locHints.push(isWeakR ? "Right Hemiparesis." : "Left Hemiparesis.");
-        if (nVals[4] === nVals[5] && nVals[5] === nVals[7]) locHints.push("Lacunar syndrome suspected (Symmetric weakness).");
-    }
-
-    const hasRightCN = Array.from(document.querySelectorAll('.cn-input')).some(el => el.value === '+' && el.closest('.item-box').innerText.includes('R'));
-    const hasLeftCN = Array.from(document.querySelectorAll('.cn-input')).some(el => el.value === '+' && el.closest('.item-box').innerText.includes('L'));
-    if ((hasLeftCN && isWeakR) || (hasRightCN && isWeakL)) locHints.push("Suspect Brainstem lesion (Crossed hemiplegia).");
-
-    const sPin = document.getElementById('s-pin').value;
-    if (sPin.toLowerCase().includes('t')) locHints.push(`Suspect spinal cord lesion at ${sPin.toUpperCase()} level.`);
+    if (pathoR[0].value === "+" || pathoL[0].value === "+") locHints.push("Upper Motor Neuron (UMN) pattern.");
+    if (mpR.some(v=>v.value<5) || mpL.some(v=>v.value<5)) locHints.push(mpR.some(v=>v.value<5) ? "Right Hemiparesis." : "Left Hemiparesis.");
 
     document.getElementById('loc-content').innerHTML = locHints.length > 0 ? 
         locHints.map(h => `<div class="loc-item">• ${h}</div>`).join('') : "輸入資料以進行定位分析...";
 
-    let t = `【Neurological examination】\n`;
-    t += `${gcsNoteLine}\n`;
-    t += `. Consciousness: ${document.querySelectorAll('.n-val')[0].options[document.querySelectorAll('.n-val')[0].selectedIndex].text.split(' ')[1] || 'clear'}\n\n`;
+    let t = `【Neurological examination】\n${gcsNoteLine}\n. Consciousness: ${document.querySelectorAll('.n-val')[0].options[document.querySelectorAll('.n-val')[0].selectedIndex].text.split(' ')[1] || 'clear'}\n\n`;
 
-    t += `*Cranial nerve\n`;
-    t += `CN I : smell(${getCN('not performed')}), anosmia(${getCN('anosmia')}), hyposmia(${getCN('hyposmia')}), hyperosmia(${getCN('hyperosmia')}), olfactory agnosia(${getCN('olfactory agnosia')})\n`;
-    t += `CN II: Visual acuity: Counts fingers(${getCN('Counts fingers')}), hand motion(${getCN('hand motion')}), light perception(${getCN('light perception')})\n`;
-    t += `       Visual fields: confrontation test-${getCN('confrontation test')}\n`;
-    t += `                       hemianopia(${getCN('hemianopia')}), quadrantanopia(${getCN('quadrantanopia')})\n`;
-    t += `CN III, IV, VI:\n`;
-    t += `       Pupil: isocoric R/L: ${getCN('isocoric R/L')}, light reflex R/L: ${getCN('light reflex R/L')}, RAPD(${getCN('RAPD')})\n`;
-    t += `       Extraocular movement: ${getCN('EOM')}; Primary gaze: ${getCN('Primary gaze')}\n`;
-    t += `       Convergence: ${getCN('Convergence')}; Binocular diplopia(${getCN('Binocular diplopia')})\n`;
-    t += `       Pursuit: ${getCN('Pursuit')}; Saccade: ${getCN('Saccade')}\n`;
-    t += `CN V:  Corneal reflex(${getCN('Corneal reflex')}); Facial sensation: ${getCN('Facial sensation')}\n`;
-    t += `       Masseter R/L: ${getCN('Masseter R/L')}, Temporalis R/L: ${getCN('Temporalis R/L')}\n`;
-    t += `CN VII : ${getCN('Facial palsy type')}; Nasolabial fold shallowing(${getCN('Nasolabial fold shallowing')})\n`;
-    t += `CN VIII: Hearing: ${getCN('Hearing ability')}; Weber: ${getCN('Weber test')}; Rinne: ${getCN('Rinne test')}\n`;
-    t += `CN IX,X: Uvula deviation(${getCN('Uvula deviation')}), Gag reflex(${getCN('Gag reflex')}), dysarthria(${getCN('dysarthria')})\n`;
-    t += `CN XI:  Sternocleidomastoid: weakness(${getCN('weakness')}), atrophy(${getCN('atrophy')}); Trapezius: weakness(${getCN('weakness')}), atrophy(${getCN('atrophy')})\n`;
-    t += `CN XII: Tongue: deviation(${getCN('deviation')}), atrophy(${getCN('atrophy')}), fasciculation(${getCN('fasciculation')})\n\n`;
+    t += `*Cranial nerve\nCN I : smell(${getCN('not performed')}), anosmia(${getCN('anosmia')}), hyposmia(${getCN('hyposmia')}), hyperosmia(${getCN('hyperosmia')}), olfactory agnosia(${getCN('olfactory agnosia')})\nCN II: Visual acuity: Counts fingers(${getCN('Counts fingers')}), hand motion(${getCN('hand motion')}), light perception(${getCN('light perception')})\n       Visual fields: confrontation test-${getCN('confrontation test')}\nCN III, IV, VI:\n       Pupil: isocoric R/L: ${getCN('isocoric R/L')}, light reflex R/L: ${getCN('light reflex R/L')}, RAPD(${getCN('RAPD')})\n       EOM: ${getCN('EOM')}; Primary gaze: ${getCN('Primary gaze')}\n       Pursuit: ${getCN('Pursuit')}; Saccade: ${getCN('Saccade')}\nCN V:  Corneal reflex(${getCN('Corneal reflex')}); Facial sensation: ${getCN('Facial sensation')}\nCN VII : ${getCN('Facial palsy type')}; Nasolabial fold shallowing(${getCN('Nasolabial fold shallowing')})\nCN VIII: Hearing: ${getCN('Hearing ability')}; Weber: ${getCN('Weber test')}; Rinne: ${getCN('Rinne test')}\nCN IX,X: Uvula deviation(${getCN('Uvula deviation')}), Gag reflex(${getCN('Gag reflex')}), dysarthria(${getCN('dysarthria')})\nCN XII: Tongue: deviation(${getCN('deviation')}), atrophy(${getCN('atrophy')})\n\n`;
 
-    t += `*Motor\n`;
-    t += `Motor inspection: ${document.getElementById('v-motor-ins').value}\n`;
-    t += `Muscle tone: ${document.getElementById('v-motor-tone').value}\n`;
-    t += `Muscle power:(R/L)\n`;
-    t += ` Neck flexion/extension: ${getMP(0)}; Shoulder abduction: ${getMP(1)}\n`;
-    t += ` Elbow flexion/extension: ${getMP(2)}/${getMP(3)}; Wrist extension: ${getMP(4)}\n`;
-    t += ` Finger flexion/Grasp/abduction: ${getMP(5)}/${getMP(6)}/${getMP(7)}\n`;
-    t += ` Hip flexion: ${getMP(8)}; Knee extension: ${getMP(9)}\n`;
-    t += ` Ankle dorsiflexion/plantarflexion: ${getMP(10)}/${getMP(11)}; Big toe extension: ${getMP(12)}\n\n`;
+    t += `*Motor\nMuscle power:(R/L)\n Neck: ${getMP(0)}; Shoulder: ${getMP(1)}\n Elbow F/E: ${getMP(2)}/${getMP(3)}; Wrist E: ${getMP(4)}\n Grip: ${getMP(6)}; Hip F: ${getMP(8)}; Knee E: ${getMP(9)}\n Ankle D/P: ${getMP(10)}/${getMP(11)}\n\n`;
 
+    // --- 修改生成文字中的 Reflex 部分 ---
     t += `*Reflex (R/L)\n`;
-    t += ` Biceps: ${getRef(0)}; Triceps: ${getRef(1)}\n`;
-    t += ` Knee: ${getRef(2)}; Ankle: ${getRef(3)}\n`;
-    t += ` Pathological: Babinski: ${getPatho(0)}, Hoffman: ${getPatho(1)}\n\n`;
+    t += ` Biceps(C5/6): ${getRef(0)}; Triceps(C7): ${getRef(1)}; Brachioradialis(C5/6): ${getRef(2)}\n`;
+    t += ` Knee(L4): ${getRef(3)}; Ankle(S1): ${getRef(4)}\n`;
+    t += ` Pathological/Primitive (R/L):\n`;
+    t += `   Babinski: ${getPatho(0)}, Hoffman: ${getPatho(1)}, Snouting: ${getPatho(2)}\n`;
+    t += `   Rooting: ${getPatho(3)}, Palmo-mental: ${getPatho(4)}, Grasping: ${getPatho(5)}\n\n`;
 
-    t += `*Sensation\n`;
-    t += ` Light touch/Pinprick: ${document.getElementById('s-light').value}/${document.getElementById('s-pin').value}\n`;
-    t += ` Paraesthesia: ${document.getElementById('s-para').value}; Neglect: ${document.getElementById('s-neglect').value}\n`;
-    t += ` Romberg: ${document.getElementById('s-romberg').value}\n`;
-    t += ` Joint Position(R/L): Fingers ${jR[0].value}/${jL[0].value}, Toes ${jR[1].value}/${jL[1].value}\n`;
-    t += ` Vibration(R/L): Big toe ${vR[0].value}/8, Finger ${vR[1].value}/8\n\n`;
-
-    t += `*UPDRS part III\n`;
-    t += ` Speech: ${uS[0]}; Mask face: ${uS[1]}\n`;
-    t += ` Tremor(RU/LU/RL/LL): Resting ${uSub[0]}/${uSub[1]}/${uSub[2]}/${uSub[3]}, Action ${uSub[4]}/${uSub[5]}\n`;
-    t += ` Rigidity(Neck/RU/LU/RL/LL): ${uSub[6]}/${uSub[7]}/${uSub[8]}/${uSub[9]}/${uSub[10]}\n`;
-    t += ` R/L: Tapping ${uSub[11]}/${uSub[12]}, Grasp ${uSub[13]}/${uSub[14]}, Rapid Alternating Movements ${uSub[15]}/${uSub[16]}, Foot ${uSub[17]}/${uSub[18]}\n`;
-    t += ` Gait/Pull/Stand/Bradykinesia: ${uS[11] || 0}/${uS[12] || 0}/${uS[9] || 0}/${uS[13] || 0}\n\n`;
-
-    t += `*Mental Status\n`;
-    t += ` MMSE Total: ${mTotal}/30\n`;
-    t += ` - Orientation: time(${mOriT}/5) place(${mOriP}/5)\n`;
-    t += ` - 3-item registration(${mReg}/3)("黃色、生氣、火車")\n`;
-    t += ` - series-7(${mSer7}/5)\n`;
-    t += ` - 3-item recall(${mRecall}/3)(${document.getElementById('v-mmse-recall-choice').value || '__'} correct by choice, another failed even choice)\n`;
-    t += ` - naming(${mNaming}/2) repeat(${mRepeat}/1) reading(${mAction}/1) writing(${mWriting}/1)("${document.getElementById('v-mmse-writing-content').value || '____'}")\n`;
-    t += ` - 3-step orders(${m3Step}/3)\n`;
-    t += ` - construction(${mConst}/1)\n\n`;
-    t += ` Luria: ${document.getElementById('v-cog-luria').value}; Language: ${document.getElementById('v-cog-lang').value}\n\n`;
-
-    t += `${nihssLine}\n`;
-    t += `Chart No: ${id}\n`;
-
+    t += `*Mental Status\n MMSE Total: ${mTotal}/30\n Orientation: time(${mOriT}/5) place(${mOriP}/5)\n recall(${mRecall}/3) naming(${mNaming}/2)\n\n`;
+    t += `${nihssLine}\nChart No: ${id}\n`;
     document.getElementById('export-area').value = t;
 }
 
@@ -577,19 +424,14 @@ function show(id) {
     document.querySelectorAll('.sec').forEach(s => s.classList.add('hidden'));
     document.getElementById('s-' + id).classList.remove('hidden');
     document.querySelectorAll('.menu button').forEach(b => b.classList.remove('active'));
-    const targetBtn = document.getElementById('b-' + id);
-    if(targetBtn) targetBtn.classList.add('active');
+    const btn = document.getElementById('b-' + id);
+    if(btn) btn.classList.add('active');
 }
 
 function saveToHistory() {
     const cid = document.getElementById('v-id').value;
-    if(!cid) return alert("請輸入病歷號碼再儲存！");
-    const record = {
-        time: new Date().toLocaleString(),
-        chartNo: cid,
-        selects: Array.from(document.querySelectorAll('select')).map(s => s.value),
-        texts: Array.from(document.querySelectorAll('input[type="text"]')).map(t => t.value)
-    };
+    if(!cid) return alert("請輸入病歷號碼！");
+    const record = { time: new Date().toLocaleString(), chartNo: cid, selects: Array.from(document.querySelectorAll('select')).map(s => s.value), texts: Array.from(document.querySelectorAll('input[type="text"]')).map(t => t.value) };
     let history = JSON.parse(localStorage.getItem('ne_history_v2') || '[]');
     history.unshift(record);
     localStorage.setItem('ne_history_v2', JSON.stringify(history));
@@ -598,21 +440,9 @@ function saveToHistory() {
 }
 
 function renderHistory() {
-    const listDiv = document.getElementById('history-list');
+    const list = document.getElementById('history-list');
     let history = JSON.parse(localStorage.getItem('ne_history_v2') || '[]');
-    if(history.length === 0) {
-        listDiv.innerHTML = '<p style="color:#999; text-align:center;">尚無歷史紀錄</p>';
-        return;
-    }
-    listDiv.innerHTML = history.map((rec, idx) => `
-        <div class="history-item" onclick="loadHistory(${idx})">
-            <div class="history-info">
-                <span class="history-cid">Chart: ${rec.chartNo}</span>
-                <span class="history-date">${rec.time}</span>
-            </div>
-            <button class="btn-del" onclick="deleteHistory(event, ${idx})">刪除</button>
-        </div>
-    `).join('');
+    list.innerHTML = history.length === 0 ? '<p>尚無紀錄</p>' : history.map((rec, idx) => `<div class="history-item" onclick="loadHistory(${idx})"><div class="history-info"><span class="history-cid">Chart: ${rec.chartNo}</span><span class="history-date">${rec.time}</span></div><button class="btn-del" onclick="deleteHistory(event, ${idx})">刪除</button></div>`).join('');
 }
 
 function loadHistory(idx) {
@@ -629,7 +459,6 @@ function loadHistory(idx) {
 
 function deleteHistory(e, idx) {
     e.stopPropagation();
-    if(!confirm("確定要刪除此筆紀錄嗎？")) return;
     let history = JSON.parse(localStorage.getItem('ne_history_v2') || '[]');
     history.splice(idx, 1);
     localStorage.setItem('ne_history_v2', JSON.stringify(history));
@@ -637,10 +466,10 @@ function deleteHistory(e, idx) {
 }
 
 function copyToClipboard() {
-    const textArea = document.getElementById('export-area');
-    textArea.select();
+    const area = document.getElementById('export-area');
+    area.select();
     document.execCommand('copy');
-    alert("已複製到剪貼簿！");
+    alert("已複製！");
 }
 
 function downloadTxt() {
@@ -652,6 +481,5 @@ function downloadTxt() {
     anchor.click();
 }
 </script>
-
 </body>
 </html>
