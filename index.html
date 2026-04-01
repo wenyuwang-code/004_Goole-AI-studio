@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>小笨腦子記不住NE</title>
+    <title>小笨腦子記不住NE - 完整功能版</title>
     <style>
         body { font-family: 'Consolas', 'Monaco', monospace; background: #f4f7f6; color: #333; margin: 0; padding-bottom: 150px; }
         .header { background: #2c3e50; padding: 10px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
@@ -66,7 +66,7 @@
         <button onclick="show('mmse')" id="b-mmse">MMSE</button>
         <button onclick="show('history')" class="history-btn" id="b-history">HISTORY</button>
         <button onclick="show('export')" class="export-btn" id="b-export">GENERATE NOTE</button>
-        <button onclick="show('debug')" class="debug-btn" id="b-debug">DEBUG</button>
+        <button onclick="show('debug')" class="debug-btn" id="b-debug">DEBUG (偵錯)</button>
     </div>
 </div>
 
@@ -76,42 +76,18 @@
         <button onclick="saveToHistory()" class="btn-save">儲存至歷史清單</button>
     </div>
 
+    <!-- 各個區塊內容 -->
     <div id="s-cn" class="sec hidden">
         <div class="section-title">GCS & Cranial Nerves (CN)</div>
         <div class="item-box" style="background: #e1f5fe; padding: 10px; border-radius: 4px;">
             <span class="item-label" style="color: #01579b;">GCS 評估</span>
             <div class="sub-row">
                 <span>Best Eye:</span>
-                <select id="gcs-e" onchange="autoUpdate()">
-                    <option value="4">Spontaneously (+4)</option>
-                    <option value="3">To verbal command (+3)</option>
-                    <option value="2">To pain (+2)</option>
-                    <option value="1">No eye opening (+1)</option>
-                    <option value="NT">Not testable (NT)</option>
-                </select>
-            </div>
-            <div class="sub-row">
+                <select id="gcs-e" onchange="autoUpdate()"><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option><option value="NT">NT</option></select>
                 <span>Best Verbal:</span>
-                <select id="gcs-v" onchange="autoUpdate()">
-                    <option value="5">Oriented (+5)</option>
-                    <option value="4">Confused (+4)</option>
-                    <option value="3">Inappropriate words (+3)</option>
-                    <option value="2">Incomprehensible sounds (+2)</option>
-                    <option value="1">No verbal response (+1)</option>
-                    <option value="NT">Not testable/intubated (NT)</option>
-                </select>
-            </div>
-            <div class="sub-row">
+                <select id="gcs-v" onchange="autoUpdate()"><option value="5">5</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option><option value="NT">NT</option></select>
                 <span>Best Motor:</span>
-                <select id="gcs-m" onchange="autoUpdate()">
-                    <option value="6">Obeys commands (+6)</option>
-                    <option value="5">Localizes pain (+5)</option>
-                    <option value="4">Withdrawal from pain (+4)</option>
-                    <option value="3">Flexion to pain (+3)</option>
-                    <option value="2">Extension to pain (+2)</option>
-                    <option value="1">No motor response (+1)</option>
-                    <option value="NT">Not testable (NT)</option>
-                </select>
+                <select id="gcs-m" onchange="autoUpdate()"><option value="6">6</option><option value="5">5</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option><option value="NT">NT</option></select>
             </div>
         </div>
         <div id="cn-container"></div>
@@ -123,7 +99,7 @@
     </div>
 
     <div id="s-updrs" class="sec hidden">
-        <div class="section-title">UPDRS Part III 運動評分</div>
+        <div class="section-title">UPDRS Part III</div>
         <div id="updrs-container"></div>
     </div>
 
@@ -131,12 +107,11 @@
         <div class="section-title">Motor Function</div>
         <div class="row"><div class="label">Inspection</div><input type="text" id="v-motor-ins" value="muscle wasting(-), fasciculation(-)" oninput="autoUpdate()"></div>
         <div class="row"><div class="label">Muscle Tone</div><input type="text" id="v-motor-tone" value="spasticity(-), rigidity(-)" oninput="autoUpdate()"></div>
-        <div class="sub-title">Muscle Power (R/L)</div>
         <div id="mp-box"></div>
     </div>
 
     <div id="s-reflex" class="sec hidden">
-        <div class="section-title">Deep Tendon Reflexes</div>
+        <div class="section-title">Reflexes</div>
         <div id="reflex-box"></div>
         <div class="sub-title">Pathological & Primitive Reflexes</div>
         <div id="patho-reflex-box"></div>
@@ -144,27 +119,20 @@
 
     <div id="s-sensory" class="sec hidden">
         <div class="section-title">Sensory System</div>
-        <div class="mp-row"><span>Paraesthesia:</span><select id="s-para" onchange="autoUpdate()"><option>-</option><option>+</option></select></div>
         <div id="joint-vibe-box"></div>
-        <div class="row"><span>Neglect:</span><input type="text" id="s-neglect" value="none" oninput="autoUpdate()"></div>
-        <div class="mp-row"><span>Romberg:</span><select id="s-romberg" onchange="autoUpdate()"><option>-</option><option>+</option></select></div>
-        <div class="sub-title">Small Fiber</div>
-        <div class="row"><span>Light touch:</span><input type="text" id="s-light" value="normal" oninput="autoUpdate()"></div>
         <div class="row"><span>Pinprick:</span><input type="text" id="s-pin" value="normal" oninput="autoUpdate()"></div>
     </div>
 
     <div id="s-mmse" class="sec hidden">
-        <div class="section-title">MMSE 智能評估</div>
+        <div class="section-title">MMSE</div>
         <div id="mmse-box"></div>
-        <div class="sub-title">Cognitive Details</div>
-        <div class="row"><span>Recall Choice (Correct):</span><input type="text" id="v-mmse-recall-choice" placeholder="數量" oninput="autoUpdate()"></div>
-        <div class="row"><span>Writing Content:</span><input type="text" id="v-mmse-writing-content" value="我是一個好人" oninput="autoUpdate()"></div>
-        <div class="row"><span>Luria 3-step:</span><input type="text" id="v-cog-luria" value="intact" oninput="autoUpdate()"></div>
-        <div class="row"><span>Language:</span><input type="text" id="v-cog-lang" value="fluent" oninput="autoUpdate()"></div>
+        <div class="row"><span>Recall Choice:</span><input type="text" id="v-mmse-recall-choice" placeholder="數量" oninput="autoUpdate()"></div>
+        <div class="row"><span>Writing:</span><input type="text" id="v-mmse-writing-content" value="我是一個好人" oninput="autoUpdate()"></div>
+        <div class="row"><span>Luria/Language:</span><input type="text" id="v-cog-luria" value="intact" oninput="autoUpdate()"></div>
     </div>
 
     <div id="s-history" class="sec hidden">
-        <div class="section-title">歷史暫存清單</div>
+        <div class="section-title">歷史暫存紀錄</div>
         <div id="history-list"></div>
     </div>
 
@@ -181,31 +149,23 @@
             <div id="loc-content"></div>
         </div>
         <div style="display:flex; gap:10px; margin-top:10px;">
-            <button onclick="copyToClipboard()" style="flex:1; padding:15px; background:#3498db; color:white; border:none; cursor:pointer; font-weight:bold;">複製文字</button>
-            <button onclick="downloadTxt()" style="flex:1; padding:15px; background:#27ae60; color:white; border:none; cursor:pointer; font-weight:bold;">下載 .txt</button>
+            <button onclick="copyToClipboard()" style="flex:1; padding:15px; background:#3498db; color:white; border:none; font-weight:bold;">複製文字</button>
         </div>
     </div>
 </div>
 
 <div class="footer-bar">
-    <span id="nihss-total" style="color:#d32f2f; font-weight:bold; margin-right:15px;">NIHSS: 0</span>
-    <span id="updrs-total" style="color:#1976d2; font-weight:bold; margin-right:15px;">UPDRS: 0</span>
-    <span id="mmse-total" style="color:#388e3c; font-weight:bold;">MMSE: 30/30</span>
+    <span id="nihss-total">NIHSS: 0</span> | <span id="updrs-total">UPDRS: 0</span> | <span id="mmse-total">MMSE: 30/30</span>
 </div>
 
 <script>
+// --- 數據定義 ---
 const cnData = [
     { label: "CN I: smell", items: ["not performed", "anosmia", "hyposmia", "hyperosmia", "olfactory agnosia"], type: 'select' },
-    { label: "CN II: Visual acuity", items: ["Counts fingers", "hand motion", "light perception"], type: 'select' },
-    { label: "CN II: Visual fields", items: [{ n: "confrontation test", type: 'text', def: "intact" }, { n: "hemianopia", type: 'select' }, { n: "quadrantanopia", type: 'select' }]},
-    { label: "CN III, IV, VI: Pupil", items: [{ n: "isocoric R/L", type: 'text', def: "3mm/3mm" }, { n: "light reflex R/L", type: 'text', def: "+/+" }, { n: "RAPD", type: 'text', def: "-/-" }]},
-    { label: "CN III, IV, VI: Others", items: [{ n: "EOM", type: 'text', def: "full" }, { n: "Primary gaze", type: 'text', def: "at neutral positions without diplopia" }, { n: "Convergence", type: 'text', def: "fair" }, { n: "Binocular diplopia", type: 'select' }, { n: "Pursuit", type: 'text', def: "smooth" }, { n: "Saccade", type: 'text', def: "no dysmetria" }]},
-    { label: "CN V", items: [{ n: "Corneal reflex", type: 'text', def: "+/+" }, { n: "Facial sensation", type: 'text', def: "intact and symmetric to pinprick and light touch" }, { n: "Masseter R/L", type: 'text', def: "full" }, { n: "Temporalis R/L", type: 'text', def: "full" }]},
-    { label: "CN VII", items: [{ n: "Facial palsy type", type: 'text', def: "No Central/Peripheral type facial palsy" }, { n: "Nasolabial fold shallowing", type: 'select' }]},
-    { label: "CN VIII", items: [{ n: "Hearing ability", type: 'text', def: "fair by finger rubbing test" }, { n: "Weber test", type: 'text', def: "no lateralization" }, { n: "Rinne test", type: 'text', def: "bilatareal AC>BC" }]},
-    { label: "CN IX, X", items: [{ n: "Uvula deviation", type: 'select' }, { n: "Gag reflex", type: 'text', def: "+" }, { n: "dysarthria", type: 'select' }]},
-    { label: "CN XI (SCM)", items: ["weakness", "atrophy"], type: 'select' },
-    { label: "CN XI (Trapezius)", items: ["weakness", "atrophy"], type: 'select' },
+    { label: "CN II: Visual acuity/fields", items: ["Counts fingers", "hand motion", "light perception", {n:"confrontation test", type:'text', def:"intact"}]},
+    { label: "CN III, IV, VI: Pupil", items: [{n:"isocoric R/L", type:'text', def:"3mm/3mm"}, {n:"light reflex R/L", type:'text', def:"+/+"}, {n:"RAPD", type:'text', def:"-/-"}]},
+    { label: "CN III, IV, VI: Others", items: [{n:"EOM", type:'text', def:"full"}, {n:"Binocular diplopia", type:'select'}]},
+    { label: "CN VII", items: [{n:"Facial palsy type", type:'text', def:"No Central/Peripheral type facial palsy"}, {n:"Nasolabial fold shallowing", type:'select'}]},
     { label: "CN XII", items: ["deviation", "atrophy", "fasciculation"], type: 'select' }
 ];
 
@@ -214,7 +174,7 @@ const nihssFull = [
     {n:"1b. 意識程度 (詢問月、年齡)", opts:["0 兩項正確","1 一項正確","2 兩項錯誤"]},
     {n:"1c. 意識程度 (執行命令)", opts:["0 兩項正確","1 一項正確","2 兩項錯誤"]},
     {n:"2. 眼球運動", opts:["0 正常","1 部分限制","2 偏向一側"]},
-    {n:"3. 視野", opts:["0 看到","1 部分偏盲","2 偏盲","3 全盲"]},
+    {n:"3. 視野", opts:["0 四個視野看到","1 部分偏盲","2 偏盲","3 全盲"]},
     {n:"4. 面部肌肉", opts:["0 正常","1 稍歪斜","2 一側不動","3 週邊型癱瘓"]},
     {n:"5a. 左上肢運動", opts:["0 正常","1 微掉","2 慢慢掉","3 只能水平","4 無法活動"]},
     {n:"5b. 右上肢運動", opts:["0 正常","1 微掉","2 慢慢掉","3 只能水平","4 無法活動"]},
@@ -228,25 +188,16 @@ const nihssFull = [
 ];
 
 const updrsFull = [
-    {n:"語言 (Speech)", type:"single", opts:["0 正常","1 輕微減弱","2 中度障礙","3 重度障礙","4 不了解"]},
-    {n:"面部表情", type:"single", opts:["0 正常","1 輕微","2 明顯減少","3 中度","4 全無"]},
-    {n:"靜止型顫抖", type:"4limb", k:["RU","LU","RL","LL"], opts:["0 沒有","1 輕微","2 間歇中度","3 中度常現","4 幅度大"]},
-    {n:"動作姿勢型顫抖", type:"rl", k:["R","L"], opts:["0 沒有","1 輕微","2 中度","3 姿勢性","4 重度"]},
-    {n:"僵硬 (Rigidity)", type:"rigidity", k:["Neck","RU","LU","RL","LL"], opts:["0 沒有","1 極輕微","2 輕微","3 明顯","4 嚴重"]},
-    {n:"手指打拍", type:"rl", k:["R","L"], opts:["0 正常","1 有時遲緩","2 中度障礙","3 重度障礙","4 無法"]},
-    {n:"手掌握合", type:"rl", k:["R","L"], opts:["0 正常","1 有點緩慢","2 中度","3 重度","4 無法"]},
-    {n:"前臂迴旋", type:"rl", k:["R","L"], opts:["0 正常","1 有點遲緩","2 中度","3 重度","4 無法"]},
-    {n:"兩腳靈敏度", type:"rl", k:["R","L"], opts:["0 正常","1 有點遲緩","2 中度","3 重度","4 無法"]},
-    {n:"起立", type:"single", opts:["0 正常","1 遲緩","2 需推把手","3 易後跌","4 需人幫"]},
-    {n:"姿勢", type:"single", opts:["0 正常挺直","1 輕微駝背","2 明顯異常","3 中度駝背","4 嚴重前屈"]},
-    {n:"步態 (Gait)", type:"single", opts:["0 正常","1 拖步","2 走路困難","3 極端困難","4 不能走"]},
-    {n:"姿勢平穩度", type:"single", opts:["0 正常","1 後退","2 無反應","3 不穩","4 需幫"]},
-    {n:"全身遲緩", type:"single", opts:["0 正常","1 稍微","2 輕度","3 中度","4 重度"]}
+    {n:"語言 (Speech)", type:"single", opts:["0 正常","1 輕微","2 中度","3 重度","4 不了解"]},
+    {n:"面部表情", type:"single", opts:["0 正常","1 輕微","2 明顯","3 中度","4 僵硬"]},
+    {n:"靜止型顫抖", type:"4limb", k:["RU","LU","RL","LL"], opts:["0 沒有","1 輕微","2 間歇","3 中度","4 大幅度"]},
+    {n:"僵硬 (Rigidity)", type:"rigidity", k:["Neck","RU","LU","RL","LL"], opts:["0 沒有","1 極輕微","2 輕微","3 明顯","4 嚴重"]}
 ];
 
 const mmseQs = ["年份","季節","日期","禮拜","月份","省/市","縣/市","區/鄉鎮","醫院","樓層","複述:藍","複述:悲","複述:火","100-7","93-7","86-7","79-7","72-7","回憶:藍","回憶:悲","回憶:火","辨認:手錶","辨認:鉛筆","複誦句子","閉眼動作","拿紙","摺紙","放紙","寫句子","畫圖"];
-const mpItems = ["Neck flexion/extension", "Shoulder abduction (C5)", "Elbow flexion (C6)", "Elbow extension (C7)", "Wrist extension (C6)", "Finger flexion (C8)", "Grasping (C8/T1)", "Finger abduction (T1)", "Hip flexion (L2)", "Knee extension (L3)", "Ankle dorsiflexion (L4)", "Ankle plantarflexion (S1)", "Big toe extension (L5)"];
+const mpItems = ["Neck flex/ext", "Shoulder Abd (C5)", "Elbow flex (C6)", "Elbow ext (C7)", "Wrist ext (C6)", "Finger flex (C8)", "Grasping (T1)", "Hip flex (L2)", "Knee ext (L3)", "Ankle dorsi (L4)", "Ankle plantar (S1)", "Big toe ext (L5)"];
 
+// --- 初始化 ---
 function init() {
     const cnBox = document.getElementById('cn-container');
     cnData.forEach(group => {
@@ -254,13 +205,9 @@ function init() {
         group.items.forEach(it => {
             const name = typeof it === 'string' ? it : it.n;
             const type = typeof it === 'string' ? group.type : it.type;
-            const defVal = it.def || "";
             html += `<div class="sub-row"><span>${name}:</span>`;
-            if (type === 'select') {
-                html += `<select class="cn-input" data-name="${name}" onchange="autoUpdate()"><option value="-">-</option><option value="+">+</option><option value="not performed">N/P</option></select>`;
-            } else {
-                html += `<input type="text" class="cn-input" data-name="${name}" value="${defVal}" oninput="autoUpdate()">`;
-            }
+            if (type === 'select') html += `<select class="cn-input" data-name="${name}" onchange="autoUpdate()"><option value="-">-</option><option value="+">+</option><option value="N/P">N/P</option></select>`;
+            else html += `<input type="text" class="cn-input" data-name="${name}" value="${it.def || ''}" oninput="autoUpdate()">`;
             html += `</div>`;
         });
         cnBox.innerHTML += html + `</div>`;
@@ -281,18 +228,11 @@ function init() {
 
     const mpBox = document.getElementById('mp-box');
     mpItems.forEach(it => {
-        let opts = [5,4,3,2,1,0].map(v => `<option value="${v}" ${v==5?'selected':''}>${v}</option>`).join('');
+        let opts = [5,4,3,2,1,0].map(v => `<option value="${v}">${v}</option>`).join('');
         mpBox.innerHTML += `<div class="mp-row"><span>${it}</span><div>R:<select class="mp-r" onchange="autoUpdate()">${opts}</select> L:<select class="mp-l" onchange="autoUpdate()">${opts}</select></div></div>`;
     });
 
-    const jvBox = document.getElementById('joint-vibe-box');
-    ["Fingers", "Toes"].forEach(it => jvBox.innerHTML += `<div class="mp-row"><span>${it} Joint Position</span><div>R:<select class="j-r" onchange="autoUpdate()"></select> L:<select class="j-l" onchange="autoUpdate()"></select></div></div>`);
-    document.querySelectorAll('.j-r, .j-l').forEach(el => el.innerHTML = [5,4,3,2,1,0].map(v=>`<option ${v==5?'selected':''}>${v}</option>`).join(''));
-    
-    const vOpts = []; for(let i=80; i>=0; i-=5) vOpts.push((i/10).toFixed(1));
-    ["Big toe", "Finger"].forEach(it => jvBox.innerHTML += `<div class="mp-row"><span>${it} Vibration</span><div>R:<select class="v-r" onchange="autoUpdate()">${vOpts.map(v=>`<option ${v=='8.0'?'selected':''}>${v}</option>`).join('')}</select> L:<select class="v-l" onchange="autoUpdate()">${vOpts.map(v=>`<option ${v=='8.0'?'selected':''}>${v}</option>`).join('')}</select></div></div>`);
-
-    // --- 修改 Reflex 部分 ---
+    // Reflex 部分
     const rBox = document.getElementById('reflex-box');
     const refOpts = ["mute", "-", "+", "++", "+++", "++++"].map(v => `<option value="${v}" ${v=='++'?'selected':''}>${v}</option>`).join('');
     ["Biceps(C5/6)", "Triceps(C7)", "Brachioradialis(C5/6)", "Knee(L4)", "Ankle(S1)"].forEach(it => {
@@ -300,15 +240,14 @@ function init() {
     });
 
     const pBox = document.getElementById('patho-reflex-box');
-    const pathoOpts = ["-", "+"].map(v => `<option value="${v}" ${v=='-'?'selected':''}>${v}</option>`).join('');
+    const pathoOpts = ["-", "+"].map(v => `<option value="${v}"> ${v} </option>`).join('');
     ["Babinski", "Hoffman", "Snouting", "Rooting", "Palmo-mental", "Grasping"].forEach(it => {
         pBox.innerHTML += `<div class="mp-row"><span>${it}</span><div>R:<select class="patho-r" onchange="autoUpdate()">${pathoOpts}</select> L:<select class="patho-l" onchange="autoUpdate()">${pathoOpts}</select></div></div>`;
     });
 
     const mBox = document.getElementById('mmse-box');
-    mmseQs.forEach((q, i) => mBox.innerHTML += `<div class="mp-row" style="font-size:0.8rem;"><span>${i+1}. ${q}</span><select class="mmse-val" onchange="autoUpdate()"><option value="1">1</option><option value="0">0</option></select></div>`);
+    mmseQs.forEach((q, i) => mBox.innerHTML += `<div class="mp-row" style="font-size:0.75rem;"><span>${i+1}. ${q}</span><select class="mmse-val" onchange="autoUpdate()"><option value="1">1</option><option value="0">0</option></select></div>`);
 
-    renderHistory();
     autoUpdate();
 }
 
@@ -323,100 +262,51 @@ function autoUpdate() {
     runDebugCheck();
 }
 
+// --- 偵錯功能 ---
 function runDebugCheck() {
     const debugContainer = document.getElementById('debug-container');
     let warnings = [];
     const nVals = Array.from(document.querySelectorAll('.n-val')).map(el => parseInt(el.value));
     const mpR = Array.from(document.querySelectorAll('.mp-r')).map(el => parseInt(el.value));
     const mpL = Array.from(document.querySelectorAll('.mp-l')).map(el => parseInt(el.value));
+    const mmseTotal = Array.from(document.querySelectorAll('.mmse-val')).reduce((a,b)=>a+parseInt(b.value),0);
     const pathoR = document.querySelectorAll('.patho-r')[0].value;
     const tone = document.getElementById('v-motor-tone').value.toLowerCase();
-    const wasting = document.getElementById('v-motor-ins').value.toLowerCase();
 
-    if (nVals[6] > 1 && mpL[1] === 5) warnings.push("NIHSS 顯示左上肢無力，但 Muscle Power 紀錄為 5/5。");
-    if (nVals[7] > 1 && mpR[1] === 5) warnings.push("NIHSS 顯示右上肢無力，但 Muscle Power 紀錄為 5/5。");
-    if ((pathoR === "+") && (tone.includes("flaccid") || wasting.includes("wasting"))) warnings.push("矛盾：Babinski(+) 與肌肉萎縮同時出現。");
+    if (nVals[6] > 1 && mpL[1] === 5) warnings.push("矛盾：NIHSS 顯示左上肢無力，但 Muscle Power 紀錄為 5/5。");
+    if (nVals[7] > 1 && mpR[1] === 5) warnings.push("矛盾：NIHSS 顯示右上肢無力，但 Muscle Power 紀錄為 5/5。");
+    if (pathoR === "+" && tone.includes("flaccid")) warnings.push("矛盾：Babinski(+) (UMN) 與 Flaccid tone (LMN) 同時出現。");
+    if (nVals[12] > 0 && mmseTotal === 30) warnings.push("警示：失語症評分 > 0，但 MMSE 為滿分 30。");
 
-    if (warnings.length > 0) {
-        debugContainer.innerHTML = warnings.map(w => `<div class="debug-warning">${w}</div>`).join('');
-    } else {
-        debugContainer.innerHTML = `<div class="debug-pass">✅ 目前未發現明顯臨床邏輯矛盾。</div>`;
-    }
+    debugContainer.innerHTML = warnings.length > 0 ? warnings.map(w => `<div class="debug-warning">${w}</div>`).join('') : `<div class="debug-pass">✅ 目前未發現明顯臨床矛盾。</div>`;
 }
 
+// --- 生成病歷與定位 ---
 function generateText() {
     const id = document.getElementById('v-id').value;
-    const getCN = (name) => {
-        const el = document.querySelector(`.cn-input[data-name="${name}"]`);
-        return el ? el.value : "";
-    };
-    
-    const gE = document.getElementById('gcs-e').value;
-    const gV = document.getElementById('gcs-v').value;
-    const gM = document.getElementById('gcs-m').value;
-    let gSum = (gE === 'NT' || gV === 'NT' || gM === 'NT') ? 'NT' : (parseInt(gE) + parseInt(gV) + parseInt(gM));
-    const gcsNoteLine = `GCS: E${gE}V${gV}M${gM}, Total: ${gSum}`;
+    const getCN = (name) => { const el = document.querySelector(`.cn-input[data-name="${name}"]`); return el ? el.value : ""; };
+    const mpR = Array.from(document.querySelectorAll('.mp-r')).map(e=>e.value), mpL = Array.from(document.querySelectorAll('.mp-l')).map(e=>e.value);
+    const refR = Array.from(document.querySelectorAll('.ref-r')).map(e=>e.value), refL = Array.from(document.querySelectorAll('.ref-l')).map(e=>e.value);
+    const pR = Array.from(document.querySelectorAll('.patho-r')).map(e=>e.value), pL = Array.from(document.querySelectorAll('.patho-l')).map(e=>e.value);
+    const nVals = Array.from(document.querySelectorAll('.n-val')).map(e=>e.value);
+    const mmseTotal = Array.from(document.querySelectorAll('.mmse-val')).reduce((a,b)=>a+parseInt(b.value),0);
 
-    const mpR = document.querySelectorAll('.mp-r'), mpL = document.querySelectorAll('.mp-l');
-    const getMP = (i) => `${mpR[i].value}/${mpL[i].value}`;
-    const uS = Array.from(document.querySelectorAll('.u-val')).map(el => el.options[el.selectedIndex].text);
-    const uSub = Array.from(document.querySelectorAll('.u-val-sub')).map(el => el.value);
-    
-    const refR = document.querySelectorAll('.ref-r'), refL = document.querySelectorAll('.ref-l');
-    const getRef = (i) => `${refR[i].value}/${refL[i].value}`;
-    
-    const pathoR = document.querySelectorAll('.patho-r'), pathoL = document.querySelectorAll('.patho-l');
-    const getPatho = (i) => `${pathoR[i].value}/${pathoL[i].value}`;
-
-    const jR = document.querySelectorAll('.j-r'), jL = document.querySelectorAll('.j-l');
-    const vR = document.querySelectorAll('.v-r'), vL = document.querySelectorAll('.v-l');
-    
-    const mmseVals = Array.from(document.querySelectorAll('.mmse-val')).map(el => parseInt(el.value));
-    const mTotal = mmseVals.reduce((a,b)=>a+b,0);
-    const mOriT = mmseVals.slice(0,5).reduce((a,b)=>a+b,0);
-    const mOriP = mmseVals.slice(5,10).reduce((a,b)=>a+b,0);
-    const mReg = mmseVals.slice(10,13).reduce((a,b)=>a+b,0);
-    const mSer7 = mmseVals.slice(13,18).reduce((a,b)=>a+b,0);
-    const mRecall = mmseVals.slice(18,21).reduce((a,b)=>a+b,0);
-    const mNaming = mmseVals.slice(21,23).reduce((a,b)=>a+b,0);
-    const mRepeat = mmseVals[23];
-    const mAction = mmseVals[24];
-    const m3Step = mmseVals.slice(25,28).reduce((a,b)=>a+b,0);
-    const mWriting = mmseVals[28];
-    const mConst = mmseVals[29];
-
-    const nVals = Array.from(document.querySelectorAll('.n-val')).map(el => el.value);
-    const nTotal = nVals.reduce((a,b)=>a+parseInt(b),0);
-    const nPart1 = nVals.slice(0,3).join('');
-    const nPart2 = nVals.slice(3,6).join('');
-    const nPart3 = nVals.slice(6,10).join('');
-    const nPart4 = nVals.slice(10,15).join('');
-    const nihssLine = `NIHSS = ${nTotal} (${nPart1} ${nPart2} ${nPart3} ${nPart4})`;
-
+    // 定位邏輯
     let locHints = [];
-    if (parseInt(nVals[12]) > 0 || parseInt(nVals[14]) > 0) locHints.push("Cortical involvement (Aphasia/Neglect).");
-    if (pathoR[0].value === "+" || pathoL[0].value === "+") locHints.push("Upper Motor Neuron (UMN) pattern.");
-    if (mpR.some(v=>v.value<5) || mpL.some(v=>v.value<5)) locHints.push(mpR.some(v=>v.value<5) ? "Right Hemiparesis." : "Left Hemiparesis.");
+    if (nVals[12] > 0 || nVals[14] > 0) locHints.push("Cortical signs (Aphasia/Neglect).");
+    if (pR[0] === "+" || pL[0] === "+") locHints.push("Upper Motor Neuron (UMN) pattern.");
+    if (mpR.some(v=>v<5) || mpL.some(v=>v<5)) locHints.push(mpR.some(v=>v<5) ? "Right Hemiparesis." : "Left Hemiparesis.");
+    if (nVals[4] === nVals[5] && nVals[5] === nVals[7] && nVals[12]==0) locHints.push("Possible Lacunar syndrome.");
 
-    document.getElementById('loc-content').innerHTML = locHints.length > 0 ? 
-        locHints.map(h => `<div class="loc-item">• ${h}</div>`).join('') : "輸入資料以進行定位分析...";
+    document.getElementById('loc-content').innerHTML = locHints.map(h => `<div class="loc-item">• ${h}</div>`).join('') || "輸入中...";
 
-    let t = `【Neurological examination】\n${gcsNoteLine}\n. Consciousness: ${document.querySelectorAll('.n-val')[0].options[document.querySelectorAll('.n-val')[0].selectedIndex].text.split(' ')[1] || 'clear'}\n\n`;
+    let t = `【Neurological examination】\nChart No: ${id}\nGCS: E${document.getElementById('gcs-e').value}V${document.getElementById('gcs-v').value}M${document.getElementById('gcs-m').value}\n\n`;
+    t += `*Cranial nerve\nCN III,IV,VI: Pupil: ${getCN('isocoric R/L')}, LR: ${getCN('light reflex R/L')}, RAPD: ${getCN('RAPD')}, EOM: ${getCN('EOM')}\nCN VII: ${getCN('Facial palsy type')}, Naso-fold: ${getCN('Nasolabial fold shallowing')}\nCN XII: Tongue: ${getCN('deviation')}\n\n`;
+    t += `*Motor (R/L)\nPower: Sh Abd: ${mpR[1]}/${mpL[1]}, Elb F: ${mpR[2]}/${mpL[2]}, Grasp: ${mpR[6]}/${mpL[6]}, Hip F: ${mpR[8]}/${mpL[8]}, Knee E: ${mpR[9]}/${mpL[9]}\nTone: ${document.getElementById('v-motor-tone').value}\n\n`;
+    t += `*Reflex (R/L)\nBiceps: ${refR[0]}/${refL[0]}, Triceps: ${refR[1]}/${refL[1]}, Knee: ${refR[3]}/${refL[3]}, Ankle: ${refR[4]}/${refL[4]}\nBabinski: ${pR[0]}/${pL[0]}, Hoffman: ${pR[1]}/${pL[1]}, Snouting: ${pR[2]}/${pL[2]}, Rooting: ${pR[3]}/${pL[3]}\n\n`;
+    t += `*Mental Status: MMSE ${mmseTotal}/30, Luria: ${document.getElementById('v-cog-luria').value}\n`;
+    t += `NIHSS = ${nVals.reduce((a,b)=>a+parseInt(b),0)} (${nVals.slice(0,3).join('')} ${nVals.slice(3,6).join('')} ${nVals.slice(6,10).join('')} ${nVals.slice(10,15).join('')})`;
 
-    t += `*Cranial nerve\nCN I : smell(${getCN('not performed')}), anosmia(${getCN('anosmia')}), hyposmia(${getCN('hyposmia')}), hyperosmia(${getCN('hyperosmia')}), olfactory agnosia(${getCN('olfactory agnosia')})\nCN II: Visual acuity: Counts fingers(${getCN('Counts fingers')}), hand motion(${getCN('hand motion')}), light perception(${getCN('light perception')})\n       Visual fields: confrontation test-${getCN('confrontation test')}\nCN III, IV, VI:\n       Pupil: isocoric R/L: ${getCN('isocoric R/L')}, light reflex R/L: ${getCN('light reflex R/L')}, RAPD(${getCN('RAPD')})\n       EOM: ${getCN('EOM')}; Primary gaze: ${getCN('Primary gaze')}\n       Pursuit: ${getCN('Pursuit')}; Saccade: ${getCN('Saccade')}\nCN V:  Corneal reflex(${getCN('Corneal reflex')}); Facial sensation: ${getCN('Facial sensation')}\nCN VII : ${getCN('Facial palsy type')}; Nasolabial fold shallowing(${getCN('Nasolabial fold shallowing')})\nCN VIII: Hearing: ${getCN('Hearing ability')}; Weber: ${getCN('Weber test')}; Rinne: ${getCN('Rinne test')}\nCN IX,X: Uvula deviation(${getCN('Uvula deviation')}), Gag reflex(${getCN('Gag reflex')}), dysarthria(${getCN('dysarthria')})\nCN XII: Tongue: deviation(${getCN('deviation')}), atrophy(${getCN('atrophy')})\n\n`;
-
-    t += `*Motor\nMuscle power:(R/L)\n Neck: ${getMP(0)}; Shoulder: ${getMP(1)}\n Elbow F/E: ${getMP(2)}/${getMP(3)}; Wrist E: ${getMP(4)}\n Grip: ${getMP(6)}; Hip F: ${getMP(8)}; Knee E: ${getMP(9)}\n Ankle D/P: ${getMP(10)}/${getMP(11)}\n\n`;
-
-    // --- 修改生成文字中的 Reflex 部分 ---
-    t += `*Reflex (R/L)\n`;
-    t += ` Biceps(C5/6): ${getRef(0)}; Triceps(C7): ${getRef(1)}; Brachioradialis(C5/6): ${getRef(2)}\n`;
-    t += ` Knee(L4): ${getRef(3)}; Ankle(S1): ${getRef(4)}\n`;
-    t += ` Pathological/Primitive (R/L):\n`;
-    t += `   Babinski: ${getPatho(0)}, Hoffman: ${getPatho(1)}, Snouting: ${getPatho(2)}\n`;
-    t += `   Rooting: ${getPatho(3)}, Palmo-mental: ${getPatho(4)}, Grasping: ${getPatho(5)}\n\n`;
-
-    t += `*Mental Status\n MMSE Total: ${mTotal}/30\n Orientation: time(${mOriT}/5) place(${mOriP}/5)\n recall(${mRecall}/3) naming(${mNaming}/2)\n\n`;
-    t += `${nihssLine}\nChart No: ${id}\n`;
     document.getElementById('export-area').value = t;
 }
 
@@ -424,61 +314,13 @@ function show(id) {
     document.querySelectorAll('.sec').forEach(s => s.classList.add('hidden'));
     document.getElementById('s-' + id).classList.remove('hidden');
     document.querySelectorAll('.menu button').forEach(b => b.classList.remove('active'));
-    const btn = document.getElementById('b-' + id);
-    if(btn) btn.classList.add('active');
-}
-
-function saveToHistory() {
-    const cid = document.getElementById('v-id').value;
-    if(!cid) return alert("請輸入病歷號碼！");
-    const record = { time: new Date().toLocaleString(), chartNo: cid, selects: Array.from(document.querySelectorAll('select')).map(s => s.value), texts: Array.from(document.querySelectorAll('input[type="text"]')).map(t => t.value) };
-    let history = JSON.parse(localStorage.getItem('ne_history_v2') || '[]');
-    history.unshift(record);
-    localStorage.setItem('ne_history_v2', JSON.stringify(history));
-    renderHistory();
-    alert("儲存成功！");
-}
-
-function renderHistory() {
-    const list = document.getElementById('history-list');
-    let history = JSON.parse(localStorage.getItem('ne_history_v2') || '[]');
-    list.innerHTML = history.length === 0 ? '<p>尚無紀錄</p>' : history.map((rec, idx) => `<div class="history-item" onclick="loadHistory(${idx})"><div class="history-info"><span class="history-cid">Chart: ${rec.chartNo}</span><span class="history-date">${rec.time}</span></div><button class="btn-del" onclick="deleteHistory(event, ${idx})">刪除</button></div>`).join('');
-}
-
-function loadHistory(idx) {
-    let history = JSON.parse(localStorage.getItem('ne_history_v2') || '[]');
-    const rec = history[idx];
-    document.getElementById('v-id').value = rec.chartNo;
-    const selects = document.querySelectorAll('select');
-    rec.selects.forEach((val, i) => { if(selects[i]) selects[i].value = val; });
-    const texts = document.querySelectorAll('input[type="text"]');
-    rec.texts.forEach((val, i) => { if(texts[i]) texts[i].value = val; });
-    autoUpdate();
-    show('export');
-}
-
-function deleteHistory(e, idx) {
-    e.stopPropagation();
-    let history = JSON.parse(localStorage.getItem('ne_history_v2') || '[]');
-    history.splice(idx, 1);
-    localStorage.setItem('ne_history_v2', JSON.stringify(history));
-    renderHistory();
+    document.getElementById('b-' + id).classList.add('active');
 }
 
 function copyToClipboard() {
-    const area = document.getElementById('export-area');
-    area.select();
+    document.getElementById('export-area').select();
     document.execCommand('copy');
-    alert("已複製！");
-}
-
-function downloadTxt() {
-    const text = document.getElementById('export-area').value;
-    const blob = new Blob([text], { type: 'text/plain' });
-    const anchor = document.createElement('a');
-    anchor.download = `NE_${document.getElementById('v-id').value || 'report'}.txt`;
-    anchor.href = window.URL.createObjectURL(blob);
-    anchor.click();
+    alert("已複製到剪貼簿！");
 }
 </script>
 </body>
